@@ -1,16 +1,77 @@
-# React + Vite
+# Swoo Tech Mart
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Swoo Tech Mart is a full-stack e-commerce web application built with **React** for the frontend and **Spring Boot** for the backend. The project is designed to provide a modern online shopping experience while demonstrating enterprise-level backend development practices, secure authentication, and scalable architecture.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+* User Authentication & Authorization (JWT)
+* Product Management
+* Category Management
+* Shopping Cart
+* Order Management
+* User Profile
+* Admin Dashboard
+* Product Search & Filtering
+* Responsive User Interface
+* RESTful API Architecture
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
 
-## Expanding the Oxlint configuration
+* React
+* React Router
+* Axios
+* Tailwind CSS
+* React Query (optional)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+### Backend
+
+* Spring Boot
+* Spring Security
+* JWT Authentication
+* Spring Data JPA
+* Hibernate
+* MySQL
+* Maven
+
+### Tools
+
+* Git & GitHub
+* Postman
+* Docker (planned)
+
+## 📂 Project Structure
+
+```
+Frontend
+├── React
+└── Tailwind CSS
+
+Backend
+├── Spring Boot
+├── Spring Security
+├── JPA/Hibernate
+└── MySQL
+```
+
+## 🎯 Project Goal
+
+The primary goal of this project is to strengthen my full-stack development skills by building a production-style e-commerce application. It focuses on clean architecture, secure authentication, REST API design, database relationships, and real-world business logic.
+
+## 📌 Future Improvements
+
+* OAuth2 Login (Google/GitHub)
+* Payment Integration
+* Email Verification
+* Product Reviews & Ratings
+* Wishlist
+* Inventory Management
+* Docker Deployment
+* CI/CD Pipeline
+* Redis Caching
+* Microservices Architecture
+
+## 📄 License
+
+This project is developed for learning, portfolio, and demonstration purposes.
