@@ -62,7 +62,7 @@ const panels = [
 
 export default function CategoryShowcaseGrid() {
     return (
-        <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 p-6 sm:grid-cols-3">
+        <div className="container mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 sm:grid-cols-3">
             {
                 panels.map((panel) => (
                     <CategoryShowcasePanel key={panel.title} {...panel} />

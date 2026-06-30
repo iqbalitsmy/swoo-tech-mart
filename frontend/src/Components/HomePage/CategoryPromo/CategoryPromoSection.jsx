@@ -92,9 +92,11 @@ const CategoryPromoSection = ({
 
             {/* Product row — static grid, no scrolling */}
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3 md:grid-cols-5">
-                {products.map((product, i) => (
-                    <ProductCard key={i} product={product} />
-                ))}
+                {
+                    products.map((product, i) => (
+                        <ProductCard key={i} product={product} />
+                    ))
+                }
             </div>
         </section>
     );

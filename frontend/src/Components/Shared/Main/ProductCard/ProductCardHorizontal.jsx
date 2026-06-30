@@ -1,19 +1,43 @@
-import React from "react";
-import { Heart, ShoppingBag } from "lucide-react";
+import React, { useState } from "react";
+import { ShoppingBag, Check } from "lucide-react";
 import StarRating from "./StarRating";
 
-/**
- * Compact horizontal variant of ProductCard — image on the left,
- * info stacked on the right, smaller overall footprint. Used for
- * "Recently Viewed" rows where many items need to fit in less space.
- */
+
+const STOCK_BADGES = {
+    out: { label: "Out", className: "bg-danger text-white" },
+    preorder: { label: "Pre", className: "bg-gray-700 text-white" },
+};
+
 const ProductCardHorizontal = ({ product }) => {
-    const { title, price, thumbnail, rating } = product;
+    const {
+        title,
+        price,
+        oldPrice,
+        thumbnail,
+        rating,
+        stock,
+        addToCard = false,
+    } = product;
+
+    const [isInCart, setIsInCart] = useState(addToCard);
+
+    const stockBadge = STOCK_BADGES[stock];
 
     return (
         <div className="group relative flex w-full items-center gap-3 rounded-xl border border-solid border-gray-200 bg-white p-3 transition hover:border hover:border-gray-300">
             {/* Image area */}
             <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-50">
+
+                {
+                    stockBadge && (
+                        <span
+                            className={`absolute left-0.5 top-0.5 z-10 rounded px-1 py-0.5 text-[8px] font-bold uppercase leading-none tracking-wide ${stockBadge.className}`}
+                        >
+                            {stockBadge.label}
+                        </span>
+                    )
+                }
+
                 <a href="" className="cursor-pointer">
                     <img
                         className="h-full max-h-16 w-full object-contain mx-auto"
@@ -23,13 +47,7 @@ const ProductCardHorizontal = ({ product }) => {
                     />
                 </a>
 
-                {/* Wishlist icon — appears on hover, scaled down to fit the smaller image area */}
-                <button
-                    aria-label="Add to wishlist"
-                    className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-gray-500 opacity-0 shadow-sm transition hover:text-danger group-hover:opacity-100"
-                >
-                    <Heart className="h-2.5 w-2.5" />
-                </button>
+
             </div>
 
             {/* Info */}
@@ -38,19 +56,43 @@ const ProductCardHorizontal = ({ product }) => {
                     <p className="truncate text-xs font-medium hover:text-gray-700">
                         <a href="">{title}</a>
                     </p>
-                    <p className="mt-0.5 text-sm font-bold text-gray-900">
-                        ${price?.toFixed(2)}
-                    </p>
+
+                    <div className="mt-0.5 flex items-baseline gap-1">
+                        <span
+                            className={`text-sm font-bold ${oldPrice ? "text-danger" : "text-gray-900"
+                                }`}
+                        >
+                            ${price?.toFixed(2)}
+                        </span>
+                        {oldPrice && (
+                            <span className="text-[10px] text-gray-400 line-through">
+                                ${oldPrice.toFixed(2)}
+                            </span>
+                        )}
+                    </div>
+
                     <div className="mt-1 origin-left scale-90">
                         <StarRating rating={rating} />
                     </div>
                 </div>
 
+                {/* Cart button*/}
                 <button
-                    aria-label={`Add ${title} to cart`}
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition hover:bg-primary hover:text-white"
+                    onClick={() => setIsInCart((prev) => !prev)}
+                    aria-label={isInCart ? `Remove ${title} from cart` : `Add ${title} to cart`}
+                    aria-pressed={isInCart}
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition ${isInCart
+                        ? "bg-primary text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-primary hover:text-white"
+                        }`}
                 >
-                    <ShoppingBag className="h-3.5 w-3.5" />
+                    {
+                        isInCart ? (
+                            <Check className="h-3.5 w-3.5" />
+                        ) : (
+                            <ShoppingBag className="h-3.5 w-3.5" />
+                        )
+                    }
                 </button>
             </div>
         </div>

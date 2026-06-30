@@ -38,9 +38,9 @@ const categories = [
 
 const CategoryHero = () => {
     return (
-        <div className="container mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row">
+        <div className="container mx-auto flex max-w-7xl flex-col gap-4 pt-0 pb-6 lg:pt-6  sm:flex-row">
             {/* Left: category sidebar */}
-            <aside className="w-full shrink-0 rounded-xl bg-white shadow-sm sm:w-64">
+            <aside className="w-full hidden lg:block shrink-0 rounded-xl bg-white shadow-sm sm:w-64">
                 <p className="px-4 pt-4 text-xs font-bold uppercase tracking-wide text-danger">
                     Sale 40% off
                 </p>

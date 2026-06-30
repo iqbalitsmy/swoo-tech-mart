@@ -24,6 +24,8 @@ const products = [
         stock: "in",
         thumbnail: productImg,
         categoryTags: ["best-seller"],
+        wishlist: true,
+        addToCard: false,
     },
     {
         reviews: 152,
@@ -36,6 +38,8 @@ const products = [
         stock: "in",
         thumbnail: productImg,
         categoryTags: ["best-seller", "popular"],
+        wishlist: true,
+        addToCard: true,
     },
     {
         reviews: 8,
@@ -48,6 +52,8 @@ const products = [
         stock: "out",
         thumbnail: productImg,
         categoryTags: ["best-seller"],
+        wishlist: true,
+        addToCard: false,
     },
     {
         reviews: null,
@@ -60,6 +66,8 @@ const products = [
         stock: "preorder",
         thumbnail: productImg,
         categoryTags: ["best-seller", "new-in"],
+        wishlist: false,
+        addToCard: false,
     },
     {
         reviews: 21,
@@ -72,6 +80,8 @@ const products = [
         stock: "in",
         thumbnail: productImg,
         categoryTags: ["new-in"],
+        wishlist: true,
+        addToCard: false,
     },
     {
         reviews: 4,
@@ -84,6 +94,8 @@ const products = [
         stock: "in",
         thumbnail: productImg,
         categoryTags: ["new-in"],
+        wishlist: true,
+        addToCard: false,
     },
     {
         reviews: 13,
@@ -96,6 +108,8 @@ const products = [
         stock: "in",
         thumbnail: productImg,
         categoryTags: ["new-in", "popular"],
+        wishlist: false,
+        addToCard: true,
     },
     {
         reviews: null,
@@ -108,6 +122,8 @@ const products = [
         stock: "preorder",
         thumbnail: productImg,
         categoryTags: ["new-in"],
+        wishlist: true,
+        addToCard: false,
     },
     {
         reviews: 312,
@@ -120,6 +136,8 @@ const products = [
         stock: "in",
         thumbnail: productImg,
         categoryTags: ["popular"],
+        wishlist: true,
+        addToCard: false,
     },
     {
         reviews: 88,
@@ -132,6 +150,8 @@ const products = [
         stock: "in",
         thumbnail: productImg,
         categoryTags: ["popular"],
+        wishlist: true,
+        addToCard: false,
     },
     {
         reviews: 6,
@@ -144,6 +164,8 @@ const products = [
         stock: "out",
         thumbnail: productImg,
         categoryTags: ["popular"],
+        wishlist: false,
+        addToCard: true,
     },
     {
         reviews: 47,
@@ -156,6 +178,8 @@ const products = [
         stock: "in",
         thumbnail: productImg,
         categoryTags: ["popular"],
+        wishlist: false,
+        addToCard: true,
     },
 ];
 
@@ -179,7 +203,7 @@ const ProductsTabs = () => {
     };
 
     return (
-        <section className="relative mx-auto w-full max-w-6xl rounded-xl bg-white p-6 shadow-sm">
+        <section className="relative mx-auto w-full rounded-xl max-w-7xl bg-white p-6 shadow-sm">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div className="flex items-center gap-6">

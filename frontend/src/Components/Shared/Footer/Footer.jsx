@@ -200,7 +200,7 @@ const Footer = () => {
             <div className="mx-auto mt-10 w-full max-w-6xl border-t border-gray-100 pt-5">
                 <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
                     <p className="text-xs text-gray-400">
-                        © 2024 <span className="font-bold text-gray-600">Shawonetc3</span>.
+                        © 2024 <span className="font-bold text-gray-600"><a href="">iqbalitsmy</a></span>.
                         All Rights Reserved
                     </p>
 

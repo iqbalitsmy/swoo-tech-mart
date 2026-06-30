@@ -34,7 +34,7 @@ const slides = [
 
 const HeroCarousel = () => {
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
-        Autoplay({ delay: 4000, stopOnInteraction: false }),
+        Autoplay({ delay: 300000, stopOnInteraction: false }),
     ]);
     const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -51,18 +51,22 @@ const HeroCarousel = () => {
     }, [emblaApi]);
 
     return (
-        <div className="relative w-full overflow-hidden rounded-xl bg-[#f1e9dc] px-4 py-6 sm:px-10">
+        // CHANGED: reduced horizontal padding on mobile (px-4) and let it grow at sm —
+        // this was already responsive-ish, kept as-is, just confirming it's fine.
+        <div className="relative w-full overflow-hidden lg:rounded-xl bg-[#f1e9dc] px-4 py-6 sm:px-10">
             <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex">
                     {
                         slides.map((slide, i) => (
                             <div
                                 key={i}
-                                className="flex min-w-0 flex-[0_0_100%] items-center justify-center gap-6 sm:gap-10"
+                                className="flex min-w-0 flex-[0_0_100%] flex-col items-center justify-center gap-6 text-center sm:flex-row sm:gap-10 sm:text-left"
                             >
-                                <div className="max-w-xs text-left">
+                                <div
+                                    className="w-full max-w-sm px-2 sm:w-auto sm:max-w-xs sm:px-0"
+                                >
                                     <p className="text-sm font-semibold text-gray-800">{slide.brand}</p>
-                                    <h2 className="mt-1 text-2xl font-bold leading-snug text-gray-900 sm:text-3xl">
+                                    <h2 className="mt-1 text-xl font-bold leading-snug text-gray-900 sm:text-2xl md:text-3xl">
                                         {slide.titleA}{" "}
                                         <span className="font-normal">{slide.titleB}</span>
                                     </h2>
@@ -78,24 +82,21 @@ const HeroCarousel = () => {
                     }
                 </div>
             </div>
-
-            {/* Prev / Next arrows */}
             <button
                 onClick={scrollPrev}
                 aria-label="Previous slide"
-                className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
+                className="absolute left-2 top-1/2 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white sm:flex"
             >
                 <ChevronLeft className="h-5 w-5" />
             </button>
             <button
                 onClick={scrollNext}
                 aria-label="Next slide"
-                className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white"
+                className="absolute right-2 top-1/2 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-gray-700 shadow hover:bg-white sm:flex"
             >
                 <ChevronRight className="h-5 w-5" />
             </button>
 
-            {/* Dots */}
             <div className="mt-4 flex justify-center gap-2">
                 {slides.map((_, i) => (
                     <button
