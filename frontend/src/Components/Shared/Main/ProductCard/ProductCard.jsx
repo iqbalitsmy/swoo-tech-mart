@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Heart, Eye, ShoppingBag, Star, StarHalf, Link, Check } from "lucide-react";
-import StarRating from "./StarRating";
+import StarRating from "../../StarRating/StarRating";
 
 const STOCK_BADGES = {
     out: { label: "Out of Stock", className: "bg-danger text-white" },

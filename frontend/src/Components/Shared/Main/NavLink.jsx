@@ -1,43 +1,47 @@
 import React, { useState } from 'react';
-import { Search, Menu, ShoppingCart, MapPin, ChevronDown, X, User } from "lucide-react";
-import { Link } from 'react-router-dom';
-import logo from "../../../assets/logo/logo-icon.png"
+import { Search, Menu, ShoppingCart, MapPin, ChevronDown, X, User, Heart } from "lucide-react";
+import { Link, NavLink as RouterNavLink } from 'react-router-dom';
+import logo from "../../../assets/logo/logo-icon.png";
+
+// CHANGED: desktop bottom links now map to real routes only.
+// Removed: Today's Deals, Prime Video, Gift Cards, Sell, Registry,
+// Customer Service — none have routes in the router.
+const desktopLinks = [
+    { label: "Home", to: "/" },
+    { label: "Products", to: "/products" },
+    { label: "Wishlist", to: "/wishlist" },
+];
+
+// CHANGED: mobile quick-links also reduced to real routes.
+// Removed: Video, Amazon Basics, Livestreams, Best Sellers, New Releases
+// — none have routes.
+const mobileLinks = [
+    { label: "Home", to: "/" },
+    { label: "Products", to: "/products" },
+    { label: "Wishlist", to: "/wishlist" },
+    { label: "Cart", to: "/cart" },
+    { label: "Orders", to: "/account/orders" },
+];
 
 const NavLink = () => {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [category, setCategory] = useState("All");
-
-    const categories = ["All", "Electronics", "Fashion", "Home", "Books", "Toys"];
-
-    const desktopLinks = [
-        "Today's Deals",
-        "Prime Video",
-        "Gift Cards",
-        "Sell",
-        "Registry",
-        "Customer Service",
-    ];
-
-    const mobileLinks = ["Video", "Deals", "Amazon Basics", "Livestreams", "Books", "Best Sellers", "New Releases"];
 
     return (
         <nav className="w-full font-sans text-sm">
             {/* ---------- DESKTOP (lg and up) ---------- */}
             <div className="hidden lg:block">
-                {/* Top row */}
-                <div className="flex justify-between items-center gap-3 px-3 py-2 text-white bg-secondary">
+                {/* Top row — sticky */}
+                <div className="flex justify-between items-center gap-3 px-3 py-2 text-white bg-secondary sticky top-0 z-40">
                     {/* Logo */}
-                    <a href="/" className="flex justify-center items-center gap-1 shrink-0 pr-2">
-                        <figure className='w-1/3 sm:w-auto'>
-                            <img className='' src={logo} alt="swoo tech mart" />
+                    <Link to="/" className="flex justify-center items-center gap-1 shrink-0 pr-2">
+                        <figure className="w-1/3 sm:w-auto">
+                            <img src={logo} alt="Swoo Tech Mart" />
                         </figure>
                         <div>
                             <span className="block text-xl font-bold leading-none">SWOO</span>
-                            <span className="block text-lg font-light leading-none -mt-[2]">
-                                TECH MART
-                            </span>
+                            <span className="block text-lg font-light leading-none -mt-[2]">TECH MART</span>
                         </div>
-                    </a>
+                    </Link>
 
                     {/* Deliver to */}
                     <button className="hidden shrink-0 items-start gap-1 rounded-sm border border-transparent px-2 py-1.5 text-left hover:border-white xl:flex">
@@ -50,13 +54,9 @@ const NavLink = () => {
 
                     {/* Search bar */}
                     <div className="flex h-10 flex-1 items-stretch rounded-sm">
-                        {/* <button className="flex items-center gap-1 rounded-l-sm border-r border-gray-100 bg-primary px-3 text-xs font-medium text-white hover:bg-primary-dark">
-                            {category}
-                            <ChevronDown className="h-3 w-3" />
-                        </button> */}
                         <input
                             type="text"
-                            placeholder="Search Amazon"
+                            placeholder="Search products..."
                             className="min-w-0 flex-1 px-3 text-sm rounded-l-sm text-gray-900 outline-none bg-gray-200"
                         />
                         <button
@@ -67,30 +67,78 @@ const NavLink = () => {
                         </button>
                     </div>
 
-                    {/* Language */}
-                    <button className="text-white hidden shrink-0 items-center gap-1 rounded-sm border border-transparent px-2 py-1.5 hover:border-white xl:flex">
-                        <span className="text-base leading-none">🇺🇸</span>
-                        <span className="font-bold">EN</span>
-                        <ChevronDown className="h-3 w-3" />
-                    </button>
+                    {/* Account dropdown */}
+                    <div className="group relative hidden shrink-0 lg:block">
+                        {/* Clicking the trigger goes to /login */}
+                        <Link
+                            to="/login"
+                            className="flex flex-col items-start rounded-sm border border-transparent px-2 py-1.5 leading-tight hover:border-white"
+                        >
+                            <span className="text-xs">Hello, sign in</span>
+                            <span className="flex items-center gap-1 text-sm font-bold">
+                                Account
+                                <ChevronDown className="h-3 w-3" />
+                            </span>
+                        </Link>
 
-                    {/* Account */}
-                    <button className="flex shrink-0 flex-col items-start rounded-sm border border-transparent px-2 py-1.5 leading-tight hover:border-white">
-                        <span className="text-xs">Hello, sign in</span>
-                        <span className="flex items-center gap-1 text-sm font-bold">
-                            Account &amp; Lists
-                            <ChevronDown className="h-3 w-3 fill-gray-800" />
-                        </span>
-                    </button>
+                        {/* Hover bridge — keeps the dropdown open when the
+                            cursor moves from the trigger down into the panel */}
+                        <div className="absolute right-0 top-full h-2 w-60" />
 
-                    {/* Returns */}
-                    <button className="hidden shrink-0 flex-col items-start rounded-sm border border-transparent px-2 py-1.5 leading-tight hover:border-white md:flex">
-                        <span className="text-xs">Returns</span>
-                        <span className="text-sm font-bold">&amp; Orders</span>
-                    </button>
+                        <div className="invisible absolute right-0 top-full z-50 w-60 translate-y-1 rounded-sm
+                            border border-gray-200 bg-white p-4 text-gray-900 opacity-0 shadow-xl
+                            transition-all duration-150
+                            group-hover:visible group-hover:translate-y-2 group-hover:opacity-100
+                            group-focus-within:visible group-focus-within:translate-y-2 group-focus-within:opacity-100"
+                        >
+                            {/* Sign in / Sign up CTA */}
+                            <div className="flex gap-2">
+                                <Link
+                                    to="/login"
+                                    className="flex-1 rounded bg-primary py-1.5 text-center text-sm font-semibold text-white hover:bg-primary-dark"
+                                >
+                                    Sign In
+                                </Link>
+                                <Link
+                                    to="/signup"
+                                    className="flex-1 rounded border border-gray-300 py-1.5 text-center text-sm font-semibold text-gray-700 hover:bg-gray-100"
+                                >
+                                    Sign Up
+                                </Link>
+                            </div>
+                            <p className="mt-2 text-center text-xs text-gray-500">
+                                New customer?{" "}
+                                <Link to="/signup" className="text-primary hover:underline">
+                                    Start here
+                                </Link>
+                            </p>
+
+                            <hr className="my-3 border-gray-200" />
+
+                            {/* Account-related links — all have real routes */}
+                            <div className="flex flex-col">
+                                <Link to="/account" className="rounded px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100">Your Account</Link>
+                                <Link to="/account/orders" className="rounded px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100">Your Orders</Link>
+                                <Link to="/wishlist" className="rounded px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100">Your Wishlist</Link>
+                                <Link to="/cart" className="rounded px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100">Your Cart</Link>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Wishlist icon shortcut */}
+                    <Link
+                        to="/wishlist"
+                        aria-label="Wishlist"
+                        className="flex shrink-0 items-end gap-1 rounded-sm border border-transparent px-2 py-1.5 hover:border-white"
+                    >
+                        <Heart className="h-7 w-7" />
+                    </Link>
 
                     {/* Cart */}
-                    <button className="flex shrink-0 items-end gap-1 rounded-sm border border-transparent px-2 py-1.5 hover:border-white">
+                    <Link
+                        to="/cart"
+                        className="flex shrink-0 items-end gap-1 rounded-sm border border-transparent px-2 py-1.5 hover:border-white"
+                    >
                         <span className="relative">
                             <ShoppingCart className="h-8 w-8" />
                             <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
@@ -98,11 +146,11 @@ const NavLink = () => {
                             </span>
                         </span>
                         <span className="text-sm font-bold">Cart</span>
-                    </button>
+                    </Link>
                 </div>
 
-                {/* Bottom row */}
-                <div className="flex items-center gap-4 bg-primary-dark px-3 py-1.5 text-white">
+                {/* Bottom row — real routes only */}
+                <div className="flex items-center gap-4 bg-primary-dark px-3 py-1.5 text-white sticky top-[52px] z-30">
                     <button
                         onClick={() => setMenuOpen(true)}
                         className="flex items-center gap-1.5 rounded-sm border border-transparent px-2 py-1 text-sm font-medium hover:border-white"
@@ -110,53 +158,51 @@ const NavLink = () => {
                         <Menu className="h-4 w-4" />
                         All
                     </button>
-                    {
-                        desktopLinks.map((link) => (
-                            <a
-                                key={link}
-                                href="#"
-                                className="rounded-sm border border-transparent px-1.5 py-1 text-sm hover:border-white"
-                            >
-                                {link}
-                            </a>
-                        ))
-                    }
+                    {desktopLinks.map(({ label, to }) => (
+                        <RouterNavLink
+                            key={to}
+                            to={to}
+                            className={({ isActive }) =>
+                                `rounded-sm border px-1.5 py-1 text-sm transition ${isActive
+                                    ? "border-white font-semibold"
+                                    : "border-transparent hover:border-white"
+                                }`
+                            }
+                        >
+                            {label}
+                        </RouterNavLink>
+                    ))}
                 </div>
             </div>
 
             {/* ---------- MOBILE (below lg) ---------- */}
-            <div className="lg:hidden">
+            <div className="lg:hidden sticky top-0 z-40 bg-white shadow-sm">
                 {/* Top row */}
                 <div className="flex items-center justify-between px-3 py-2.5">
                     <button onClick={() => setMenuOpen(true)} aria-label="Open menu">
                         <Menu className="h-6 w-6" />
                     </button>
 
-                    {/* Logo */}
-                    <a href="#" className="flex justify-center gap-1 shrink-0 items-end pr-2">
-                        <figure className='w-auto min-w-10'>
-                            <img className='' src={logo} alt="Ecobazar" />
+                    <Link to="/" className="flex justify-center gap-1 shrink-0 items-end pr-2">
+                        <figure className="w-auto min-w-10">
+                            <img src={logo} alt="Swoo Tech Mart" />
                         </figure>
                         <div>
                             <span className="block text-xl font-bold leading-none">SWOO</span>
-                            <span className="block text-lg font-light leading-none mt-[-2] ">
-                                TECH MART
-                            </span>
+                            <span className="block text-lg font-light leading-none mt-[-2]">TECH MART</span>
                         </div>
-                    </a>
+                    </Link>
 
-                    <div className="flex items-center gap-4">
-                        <button className="flex items-center gap-1 text-sm" aria-label="Sign in">
-                            Sign in
-                            <ChevronDown className="hidden h-3 w-3" />
+                    <div className="flex items-center gap-3">
+                        <Link to="/login" aria-label="Sign in">
                             <User className="h-5 w-5" />
-                        </button>
-                        <button className="relative" aria-label="Cart">
+                        </Link>
+                        <Link to="/cart" className="relative" aria-label="Cart">
                             <ShoppingCart className="h-6 w-6" />
                             <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
                                 0
                             </span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
@@ -164,7 +210,7 @@ const NavLink = () => {
                 <div className="flex h-10 items-stretch px-3 pb-2.5">
                     <input
                         type="text"
-                        placeholder="Search Amazon"
+                        placeholder="Search products..."
                         className="min-w-0 flex-1 rounded-l-sm px-3 text-sm text-gray-900 bg-gray-200 outline-none"
                     />
                     <button
@@ -175,109 +221,82 @@ const NavLink = () => {
                     </button>
                 </div>
 
-                {/* Quick links row */}
-                <div className="scrollbar-none flex gap-5 overflow-x-auto whitespace-nowrap bg-primary-dark px-3 py-2.5 text-sm text-white">
-                    {
-                        mobileLinks.map((link) => (
-                            <a key={link} href="#" className="shrink-0 hover:underline">
-                                {link}
-                            </a>
-                        ))
-                    }
+                {/* Quick links — real routes only */}
+                <div className="scrollbar-none flex gap-5 overflow-auto whitespace-nowrap bg-primary-dark px-3 py-2.5 text-sm text-white">
+                    {mobileLinks.map(({ label, to }) => (
+                        <RouterNavLink
+                            key={to}
+                            to={to}
+                            className={({ isActive }) =>
+                                `shrink-0 transition ${isActive ? "font-semibold underline" : "hover:underline"}`
+                            }
+                        >
+                            {label}
+                        </RouterNavLink>
+                    ))}
                 </div>
-
-                {/* Deliver to row */}
-                <button className="flex w-full items-center gap-1.5 bg-primary-dark px-3 py-2 text-sm text-gray-200">
-                    <MapPin className="h-4 w-4" />
-                    Deliver to <span className="font-bold">Bangladesh</span>
-                    <ChevronDown className="h-3 w-3" />
-                </button>
             </div>
 
-            {/* ---------- Slide-out menu (shared) ---------- */}
-            {
-                menuOpen && (
-                    <div className="fixed inset-0 z-50 flex">
-                        <div
-                            className="absolute inset-0 bg-black/50"
-                            onClick={() => setMenuOpen(false)}
-                        />
-                        <div className="relative flex h-full w-80 max-w-[85%] flex-col overflow-y-auto bg-white text-gray-900 shadow-xl">
-                            <div className="flex items-center gap-2 bg-secondary px-4 py-4 text-white">
-                                <User className="h-8 w-8" />
-                                <span className="text-lg font-bold">Hello, sign in</span>
-                                <button
-                                    onClick={() => setMenuOpen(false)}
-                                    className="ml-auto"
-                                    aria-label="Close menu"
-                                >
-                                    <X className="h-6 w-6" />
-                                </button>
-                            </div>
+            {/* ---------- Slide-out menu ---------- */}
+            {menuOpen && (
+                <div className="fixed inset-0 z-50 flex">
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setMenuOpen(false)} />
+                    <div className="relative flex h-full w-80 max-w-[85%] flex-col overflow-y-auto bg-white text-gray-900 shadow-xl">
+                        <div className="flex items-center gap-2 bg-secondary px-4 py-4 text-white">
+                            <User className="h-8 w-8" />
+                            <span className="text-lg font-bold">Hello, sign in</span>
+                            <button onClick={() => setMenuOpen(false)} className="ml-auto" aria-label="Close menu">
+                                <X className="h-6 w-6" />
+                            </button>
+                        </div>
 
-                            <div className="border-b border-gray-200 px-4 py-3">
-                                <h3 className="mb-2 text-lg font-bold">Trending</h3>
-                                {
-                                    ["Best Sellers", "New Releases", "Movers & Shakers"].map((item) => (
-                                        <a
-                                            key={item}
-                                            href="#"
-                                            className="block py-2 text-sm hover:underline"
-                                        >
-                                            {item}
-                                        </a>
-                                    ))
-                                }
-                            </div>
+                        {/* Account links */}
+                        <div className="border-b border-gray-200 px-4 py-3">
+                            <h3 className="mb-2 text-base font-bold">My Account</h3>
+                            {[
+                                { label: "Account Info", to: "/account" },
+                                { label: "My Orders", to: "/account/orders" },
+                                { label: "My Address", to: "/account/address" },
+                                { label: "Change Password", to: "/account/password" },
+                            ].map(({ label, to }) => (
+                                <Link key={to} to={to} onClick={() => setMenuOpen(false)}
+                                    className="block py-2 text-sm hover:text-primary hover:underline">
+                                    {label}
+                                </Link>
+                            ))}
+                        </div>
 
-                            <div className="border-b border-gray-200 px-4 py-3">
-                                <h3 className="mb-2 text-lg font-bold">Digital Content & Devices</h3>
-                                {["Prime Video", "Amazon Basics", "Livestreams"].map((item) => (
-                                    <a
-                                        key={item}
-                                        href="#"
-                                        className="block py-2 text-sm hover:underline"
-                                    >
-                                        {item}
-                                    </a>
-                                ))}
-                            </div>
+                        {/* Shop links */}
+                        <div className="border-b border-gray-200 px-4 py-3">
+                            <h3 className="mb-2 text-base font-bold">Shop</h3>
+                            {[
+                                { label: "All Products", to: "/products" },
+                                { label: "Wishlist", to: "/wishlist" },
+                                { label: "Cart", to: "/cart" },
+                            ].map(({ label, to }) => (
+                                <Link key={to} to={to} onClick={() => setMenuOpen(false)}
+                                    className="block py-2 text-sm hover:text-primary hover:underline">
+                                    {label}
+                                </Link>
+                            ))}
+                        </div>
 
-                            <div className="border-b border-gray-200 px-4 py-3">
-                                <h3 className="mb-2 text-lg font-bold">Shop by Category</h3>
-                                {
-                                    categories.map((item) => (
-                                        <a
-                                            key={item}
-                                            href="#"
-                                            className="block py-2 text-sm hover:underline"
-                                        >
-                                            {item}
-                                        </a>
-                                    ))
-                                }
-                            </div>
-
-                            <div className="px-4 py-3">
-                                <h3 className="mb-2 text-lg font-bold">Help & Settings</h3>
-                                {
-                                    ["Your Account", "Customer Service", "Sign in"].map(
-                                        (item) => (
-                                            <a
-                                                key={item}
-                                                href="#"
-                                                className="block py-2 text-sm hover:underline"
-                                            >
-                                                {item}
-                                            </a>
-                                        )
-                                    )
-                                }
+                        {/* Auth */}
+                        <div className="px-4 py-3">
+                            <div className="flex gap-2">
+                                <Link to="/login" onClick={() => setMenuOpen(false)}
+                                    className="flex-1 rounded bg-primary py-2 text-center text-sm font-semibold text-white hover:bg-primary-dark">
+                                    Sign In
+                                </Link>
+                                <Link to="/signup" onClick={() => setMenuOpen(false)}
+                                    className="flex-1 rounded border border-gray-300 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-100">
+                                    Sign Up
+                                </Link>
                             </div>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
         </nav>
     );
 };

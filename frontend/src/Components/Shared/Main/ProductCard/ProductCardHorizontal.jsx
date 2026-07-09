@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ShoppingBag, Check } from "lucide-react";
-import StarRating from "./StarRating";
+import StarRating from "../../StarRating/StarRating";
 
 
 const STOCK_BADGES = {

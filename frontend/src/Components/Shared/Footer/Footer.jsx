@@ -44,7 +44,6 @@ const socialIcons = [
     { icon: fbIcon, label: "Facebook" },
     { icon: instagramIcon, label: "Instagram" },
     { icon: youtubeIcon, label: "YouTube" },
-    // lucide has no dedicated Pinterest icon — swap for a custom/brand SVG if needed
 ];
 
 // Payment logos — you'll provide these. Swap each `null` for a real
