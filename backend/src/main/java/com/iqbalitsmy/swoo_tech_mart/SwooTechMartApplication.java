@@ -1,4 +1,4 @@
-package com.swootechmart.swoo_tech_mart;
+package com.iqbalitsmy.swoo_tech_mart;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
