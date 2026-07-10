@@ -5,9 +5,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
@@ -57,6 +59,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request){
         return build(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), request, null);
+    }
+
+    // ── NO HANDLER FOUND (route doesn't exist) ─────────────────────
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoHandlerFound(NoHandlerFoundException e, HttpServletRequest request) {
+
+        return build(HttpStatus.NOT_FOUND, "Route not found: "+e.getRequestURL(), request, null);
+    }
+
+    // ── WRONG HTTP METHOD ON A VALID ROUTE ─────────────────────────
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotAllowed(HttpRequestMethodNotSupportedException e,  HttpServletRequest request) {
+        return build(HttpStatus.METHOD_NOT_ALLOWED, "Method "+e.getMethod()+" not supported for this route", request, null);
     }
 
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message, HttpServletRequest request, Map<String, String> fieldErrors){
