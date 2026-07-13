@@ -9,7 +9,7 @@ public record ChangePasswordRequest(
         String currentPassword,
 
         @NotBlank(message = "Password is required")
-        @Size(min = 3, max = 100, message = "Password must be at least 8 character")
+        @Size(min = 3, max = 100, message = "Password must be at least 3 character")
         @Pattern(
                 regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
                 message = "Password must be contain at least one letter and one number"
