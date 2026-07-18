@@ -13,5 +13,8 @@ public interface ProductRepository extends JpaRepository<Product,Long>, JpaSpeci
     boolean existsBySlug(String slug);
     boolean existsBySku(String sku);
 
+    // Retrieves related products from the same category, excluding the current product.
     List<Product> findByCategory_IdAndIdNot(Long categoryId, Long excludeId, Pageable pageable);
+
+    boolean existsByCategory_Id(Long categoryId);
 }
