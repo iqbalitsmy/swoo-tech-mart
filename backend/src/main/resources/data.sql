@@ -1,2 +1,7 @@
-MERGE INTO roles (id, name) KEY(name) VALUES (1, 'ROLE_USER');
-MERGE INTO roles (id, name) KEY(name) VALUES (2, 'ROLE_ADMIN');
+INSERT INTO roles (name)
+VALUES ('ROLE_USER')
+    ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO roles (name)
+VALUES ('ROLE_ADMIN')
+    ON CONFLICT (name) DO NOTHING;

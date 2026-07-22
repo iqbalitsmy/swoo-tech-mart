@@ -3,6 +3,7 @@ package com.iqbalitsmy.swoo_tech_mart.controller;
 import com.iqbalitsmy.swoo_tech_mart.dto.response.*;
 import com.iqbalitsmy.swoo_tech_mart.entity.enums.StockStatus;
 import com.iqbalitsmy.swoo_tech_mart.service.ProductService;
+import com.iqbalitsmy.swoo_tech_mart.service.ProductVariantsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,8 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductVariantsService productVariantsService;
+
     // Filters/searches the product catalog (category, brand, tag, price range, stock, keyword) with pagination + sorting.
     @GetMapping
     public ApiResponse<PageResponse<ProductSummaryResponse>> search(
@@ -54,5 +57,10 @@ public class ProductController {
     @GetMapping("/{id}/description")
     public ApiResponse<List<ProductDescriptionSectionResponse>> getDescription(@PathVariable Long id) {
         return ApiResponse.success("Description fetched", productService.getDescription(id));
+    }
+
+    @GetMapping("/{id}/variants")
+    public ApiResponse<List<ProductVariantResponse>> getVariants(@PathVariable Long id) {
+        return ApiResponse.success("Variants fetched", productVariantsService.listForProduct(id));
     }
 }

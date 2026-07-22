@@ -2,8 +2,10 @@ package com.iqbalitsmy.swoo_tech_mart.controller;
 
 import com.iqbalitsmy.swoo_tech_mart.dto.request.*;
 import com.iqbalitsmy.swoo_tech_mart.dto.response.*;
+import com.iqbalitsmy.swoo_tech_mart.entity.ProductVariant;
 import com.iqbalitsmy.swoo_tech_mart.repository.*;
 import com.iqbalitsmy.swoo_tech_mart.service.ProductAdminService;
+import com.iqbalitsmy.swoo_tech_mart.service.ProductVariantsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,8 @@ import java.util.List;
 public class ProductAdminController {
 
     private final ProductAdminService productAdminService;
+    private final ProductVariantsService  productVariantsService;
+
 
     // ---- Product ----
     // Creates a new product from the request payload and returns 201 with the created resource.
@@ -43,6 +47,13 @@ public class ProductAdminController {
     public ApiResponse<Void> deleteProduct(@PathVariable Long id) {
         productAdminService.deleteProduct(id);
         return ApiResponse.success("Product deleted");
+    }
+    //------variants-------
+
+    // Creating product variants
+    @PostMapping("/{id}/variants")
+    public ResponseEntity<ApiResponse<ProductVariantResponse>> createVariant(@PathVariable Long id, @Valid @RequestBody ProductVariantCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Variant created", productVariantsService.create(id, request)));
     }
 
     // ---- Images ----

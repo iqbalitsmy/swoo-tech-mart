@@ -26,6 +26,7 @@ public class ProductAdminService {
     private final ProductImageRepository productImageRepository;
     private final ProductHighlightRepository productHighlightRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final ProductVariantImageRepository productVariantImageRepository;
     private final ProductDescriptionSectionRepository productDescriptionSectionRepository;
     private final ProductDescriptionImageRepository productDescriptionImageRepository;
     private final ProductService productService; // reused for the shared toDetailResponse() assembly
@@ -105,12 +106,25 @@ public class ProductAdminService {
 
         productImageRepository.deleteAll(productImageRepository.findByProduct_IdOrderBySortOrderAsc(productId));
         productHighlightRepository.deleteAll(productHighlightRepository.findByProduct_IdOrderBySortOrderAsc(productId));
-        productVariantRepository.deleteAll(productVariantRepository.findByProduct_Id(productId));
+
+        List<ProductVariant> variants = productVariantRepository.findByProduct_Id(productId);
+
+        for (ProductVariant variant : variants) {
+            variant.getAttributeValues().clear();
+            productVariantRepository.save(variant);
+
+            productVariantImageRepository.deleteAll(
+                    productVariantImageRepository.findByProductVariant_IdOrderBySortOrderAsc(variant.getId())
+            );
+        }
+
+        productVariantRepository.deleteAll(variants);
 
         productRepository.delete(product);
     }
 
     // ---- Images ----
+
     // Adds a new image to the product at the given sort order (defaults to 0 / first if not specified).
     @Transactional
     public ProductImageResponse addImage(Long productId, ProductImageRequest request) {

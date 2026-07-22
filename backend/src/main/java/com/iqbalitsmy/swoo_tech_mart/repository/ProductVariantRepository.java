@@ -9,4 +9,10 @@ import java.util.List;
 public interface ProductVariantRepository extends JpaRepository<ProductVariant,Long> {
 
     List<ProductVariant> findByProduct_Id(Long product_id);
+
+    List<ProductVariant> findByProduct_IdOrderByIdAsc(Long product_id);
+
+    boolean existsBySku(String sku);
+
+    boolean existsByAttributeValues_Id(Long attributeValues_id);
 }

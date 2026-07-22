@@ -18,5 +18,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * if this returns true, block the delete and return a proper error instead
      * of letting a FK constraint fail or silently orphaning order history.
      */
+    // Checks whether the shipping address is used by any order except those with the specified status.
     boolean existsByShippingAddressIdAndStatusNot(Long shippingAddressId, OrderStatus excludedStatus);
 }
