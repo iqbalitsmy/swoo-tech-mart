@@ -20,7 +20,7 @@ public class ProductDescription {
     private Product product;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String introHtml;
 
     @Column(length = 500)
@@ -33,6 +33,6 @@ public class ProductDescription {
     private String subSectionTitle;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String subSectionBodyHtml;
 }

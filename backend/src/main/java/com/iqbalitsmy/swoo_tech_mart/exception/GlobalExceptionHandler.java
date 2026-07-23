@@ -27,6 +27,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, e.getMessage(), request, null);
     }
 
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflictException(ConflictException e, HttpServletRequest request){
+        return build(HttpStatus.CONFLICT, e.getMessage(), request, null);
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException e, HttpServletRequest request){
         return build(HttpStatus.BAD_REQUEST, e.getMessage(), request, null);
