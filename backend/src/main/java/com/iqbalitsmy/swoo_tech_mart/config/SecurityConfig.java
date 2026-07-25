@@ -78,6 +78,11 @@ public class SecurityConfig {
                                 "/api/products/**", "/api/categories/**", "/api/brands/**", "/api/tags/**",
                                 "/api/variants/**", "/api/attribute-types/**"
                         ).permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/cart").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/cart/items").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/cart/items/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/cart/items/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/cart").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -99,7 +104,9 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of("http://localhost:*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("X-Guest-Session-Id"));
         configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
