@@ -26,6 +26,12 @@ public class OrderItem {
     @JoinColumn(name = "product_variant_id", nullable = false)
     private ProductVariant productVariant;
 
+    @Column(nullable = false, length = 255)
+    private String productTitleSnapshot;
+
+    @Column(nullable = false, length = 100)
+    private String skuSnapshot;
+
     @Column(nullable = false)
     private Integer quantity;
 

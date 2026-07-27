@@ -69,11 +69,11 @@ public class GlobalExceptionHandler {
     }
 
     // ── MALFORMED / MISSING REQUEST BODY ────────────────────────────
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException e, HttpServletRequest request){
-
-        return build(HttpStatus.BAD_REQUEST, "Request body is missing or malformed", request, null);
-    }
+//    @ExceptionHandler(HttpMessageNotReadableException.class)
+//    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException e, HttpServletRequest request){
+//
+//        return build(HttpStatus.BAD_REQUEST, "Request body is missing or malformed", request, null);
+//    }
 
     // ── NO HANDLER FOUND (route doesn't exist) ─────────────────────
     @ExceptionHandler(NoHandlerFoundException.class)

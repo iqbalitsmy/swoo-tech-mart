@@ -75,6 +75,12 @@ app:
   oauth2:
     authorized-redirect-uris:
       - http://localhost:5173/oauth2/redirect
+  payments:
+    webhook-secret: X
+
+  shipping:
+    flat-fee: 5.00
+    free-shipping-threshold: 50.00
 
 
 #app:

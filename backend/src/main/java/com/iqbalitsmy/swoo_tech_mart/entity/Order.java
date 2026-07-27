@@ -1,6 +1,7 @@
 package com.iqbalitsmy.swoo_tech_mart.entity;
 
 import com.iqbalitsmy.swoo_tech_mart.entity.enums.OrderStatus;
+import com.iqbalitsmy.swoo_tech_mart.entity.enums.PaymentProvider;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,16 +33,53 @@ public class Order {
     @Column(name = "shipping_address_id")
     private Long shippingAddressId;
 
+    // ---- Shipping address snapshot, captured at checkout ----
+    @Column(nullable = false, length = 150)
+    private String shippingRecipientName;
 
+    @Column(nullable = false, length = 255)
+    private String shippingLine1;
+
+    @Column(length = 255)
+    private String shippingLine2;
+
+    @Column(nullable = false, length = 255)
+    private String shippingCity;
+
+    @Column(nullable = false, length = 255)
+    private String shippingState;
+
+    @Column(nullable = false, length = 255)
+    private String shippingPostalCode;
+
+    //The gateway chosen at checkout
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private PaymentProvider paymentProvider;
+
+    @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal subTotal;
+
+    @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal shippingFee;
+
+    @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    private Instant updatedAt;
+
     @PrePersist
     private void onCreated() {
-        this.createdAt = Instant.now();
+        if (createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+    }
+
+    @PreUpdate
+    private void onUpdated() {
+        this.updatedAt = Instant.now();
     }
 }

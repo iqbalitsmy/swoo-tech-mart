@@ -9,6 +9,7 @@ import com.iqbalitsmy.swoo_tech_mart.security.oauth2.OAuth2AuthenticationSuccess
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -83,6 +84,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/cart/items/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/cart/items/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/cart").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/payments/webhook/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

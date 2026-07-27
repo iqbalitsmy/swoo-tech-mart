@@ -3,8 +3,11 @@ package com.iqbalitsmy.swoo_tech_mart.repository;
 import com.iqbalitsmy.swoo_tech_mart.entity.Order;
 import com.iqbalitsmy.swoo_tech_mart.entity.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+import java.util.Optional;
+
+public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
     /**
      * Checks whether this shipping address is still referenced by any order
      * NOT in the given status (e.g. exclude CANCELLED).
@@ -20,4 +23,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     // Checks whether the shipping address is used by any order except those with the specified status.
     boolean existsByShippingAddressIdAndStatusNot(Long shippingAddressId, OrderStatus excludedStatus);
+
+    Optional<Order> findByIdAndUserId(Long id, Long userId);
+
+    boolean existsByOrderNumber(String orderNumber);
 }
