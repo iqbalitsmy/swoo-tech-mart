@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Search, Menu, ShoppingCart, MapPin, ChevronDown, X, User, Heart } from "lucide-react";
-import { Link, NavLink as RouterNavLink } from 'react-router-dom';
+import { Link, NavLink as RouterNavLink, useNavigate } from 'react-router-dom';
 import logo from "../../../assets/logo/logo-icon.png";
+// CHANGED: pull in auth state so the nav can react to login/logout.
+import { useAuth } from '@/hooks/useAuth';
+import { useGetWishlist, useWishlistCount } from '@/hooks/useWishlist';
+import { useCartItemCount, useGetCart } from '@/hooks/useCart';
 
 // CHANGED: desktop bottom links now map to real routes only.
 // Removed: Today's Deals, Prime Video, Gift Cards, Sell, Registry,
@@ -23,8 +27,47 @@ const mobileLinks = [
     { label: "Orders", to: "/account/orders" },
 ];
 
+
+const Avatar = ({ user, className = 'h-8 w-8 text-sm' }) => {
+    if (user?.avatarUrl) {
+        return (
+            <img
+                src={user.avatarUrl}
+                alt={user.fullName}
+                className={`rounded-full object-cover ${className}`}
+            />
+        );
+    }
+    const initial = user?.fullName?.trim()?.charAt(0)?.toUpperCase() || '?';
+    return (
+        <span
+            className={`flex shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white ${className}`}
+        >
+            {initial}
+        </span>
+    );
+};
+
 const NavLink = () => {
     const [menuOpen, setMenuOpen] = useState(false);
+    const { user, isAuthenticated, logout } = useAuth();
+    const navigate = useNavigate();
+
+    // CHANGED: NavLink now also owns the wishlist fetch, same reasoning as
+    // cart — it's mounted everywhere, so this is the single GET /wishlist
+    // for the whole session. ProductCard and any future WishlistPage just
+    // read this cache.
+    useGetCart();
+    useGetWishlist();
+    const cartCount = useCartItemCount();
+    const wishlistCount = useWishlistCount();
+    // CHANGED: shared logout handler - closes the mobile menu (if open) and
+    // sends the user back to the home page after the session is cleared.
+    const handleLogout = async () => {
+        await logout();
+        setMenuOpen(false);
+        // navigate('/');
+    };
 
     return (
         <nav className="w-full font-sans text-sm">
@@ -69,15 +112,22 @@ const NavLink = () => {
 
                     {/* Account dropdown */}
                     <div className="group relative hidden shrink-0 lg:block">
-                        {/* Clicking the trigger goes to /login */}
+                        {/* CHANGED: trigger now goes to /account (not /login)
+                            once signed in, and shows an avatar + first name
+                            instead of "Hello, sign in". */}
                         <Link
-                            to="/login"
-                            className="flex flex-col items-start rounded-sm border border-transparent px-2 py-1.5 leading-tight hover:border-white"
+                            to={isAuthenticated ? "/account" : "/login"}
+                            className="flex items-center gap-2 rounded-sm border border-transparent px-2 py-1.5 leading-tight hover:border-white"
                         >
-                            <span className="text-xs">Hello, sign in</span>
-                            <span className="flex items-center gap-1 text-sm font-bold">
-                                Account
-                                <ChevronDown className="h-3 w-3" />
+                            {isAuthenticated && <Avatar user={user} className="h-7 w-7 text-xs" />}
+                            <span className="flex flex-col items-start">
+                                <span className="text-xs">
+                                    {isAuthenticated ? `Hello, ${user?.fullName?.split(' ')[0]}` : 'Hello, sign in'}
+                                </span>
+                                <span className="flex items-center gap-1 text-sm font-bold">
+                                    Account
+                                    <ChevronDown className="h-3 w-3" />
+                                </span>
                             </span>
                         </Link>
 
@@ -91,27 +141,44 @@ const NavLink = () => {
                             group-hover:visible group-hover:translate-y-2 group-hover:opacity-100
                             group-focus-within:visible group-focus-within:translate-y-2 group-focus-within:opacity-100"
                         >
-                            {/* Sign in / Sign up CTA */}
-                            <div className="flex gap-2">
-                                <Link
-                                    to="/login"
-                                    className="flex-1 rounded bg-primary py-1.5 text-center text-sm font-semibold text-white hover:bg-primary-dark"
-                                >
-                                    Sign In
-                                </Link>
-                                <Link
-                                    to="/signup"
-                                    className="flex-1 rounded border border-gray-300 py-1.5 text-center text-sm font-semibold text-gray-700 hover:bg-gray-100"
-                                >
-                                    Sign Up
-                                </Link>
-                            </div>
-                            <p className="mt-2 text-center text-xs text-gray-500">
-                                New customer?{" "}
-                                <Link to="/signup" className="text-primary hover:underline">
-                                    Start here
-                                </Link>
-                            </p>
+                            {/* CHANGED: signed-in users see a profile summary
+                                instead of the Sign In / Sign Up CTA. */}
+                            {
+                                isAuthenticated ? (
+                                    <div className="flex items-center gap-2 pb-1">
+                                        <Avatar user={user} className="h-9 w-9 text-sm" />
+                                        <div className="min-w-0 leading-tight">
+                                            <p className="truncate text-sm font-semibold text-gray-900">
+                                                {user.fullName}
+                                            </p>
+                                            <p className="truncate text-xs text-gray-500">{user.email}</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="flex gap-2">
+                                            <Link
+                                                to="/login"
+                                                className="flex-1 rounded bg-primary py-1.5 text-center text-sm font-semibold text-white hover:bg-primary-dark"
+                                            >
+                                                Sign In
+                                            </Link>
+                                            <Link
+                                                to="/signup"
+                                                className="flex-1 rounded border border-gray-300 py-1.5 text-center text-sm font-semibold text-gray-700 hover:bg-gray-100"
+                                            >
+                                                Sign Up
+                                            </Link>
+                                        </div>
+                                        <p className="mt-2 text-center text-xs text-gray-500">
+                                            New customer?{" "}
+                                            <Link to="/signup" className="text-primary hover:underline">
+                                                Start here
+                                            </Link>
+                                        </p>
+                                    </>
+                                )
+                            }
 
                             <hr className="my-3 border-gray-200" />
 
@@ -121,28 +188,40 @@ const NavLink = () => {
                                 <Link to="/account/orders" className="rounded px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100">Your Orders</Link>
                                 <Link to="/wishlist" className="rounded px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100">Your Wishlist</Link>
                                 <Link to="/cart" className="rounded px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100">Your Cart</Link>
+                                {/* CHANGED: logout button, only shown when signed in. */}
+                                {
+                                    isAuthenticated && (
+                                        <button
+                                            type="button"
+                                            onClick={handleLogout}
+                                            className="mt-1 rounded px-2 py-1.5 text-left text-sm font-medium text-danger hover:bg-gray-100"
+                                        >
+                                            Logout
+                                        </button>
+                                    )
+                                }
                             </div>
                         </div>
                     </div>
 
-                    {/* Wishlist icon shortcut */}
                     <Link
                         to="/wishlist"
                         aria-label="Wishlist"
                         className="flex shrink-0 items-end gap-1 rounded-sm border border-transparent px-2 py-1.5 hover:border-white"
                     >
-                        <Heart className="h-7 w-7" />
+                        <span className="relative">
+                            <Heart className="h-7 w-7" />
+                            <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                                {wishlistCount}
+                            </span>
+                        </span>
                     </Link>
 
-                    {/* Cart */}
-                    <Link
-                        to="/cart"
-                        className="flex shrink-0 items-end gap-1 rounded-sm border border-transparent px-2 py-1.5 hover:border-white"
-                    >
+                    <Link to="/cart" className="flex shrink-0 items-end gap-1 rounded-sm border border-transparent px-2 py-1.5 hover:border-white">
                         <span className="relative">
                             <ShoppingCart className="h-8 w-8" />
                             <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-                                0
+                                {cartCount}
                             </span>
                         </span>
                         <span className="text-sm font-bold">Cart</span>
@@ -158,20 +237,22 @@ const NavLink = () => {
                         <Menu className="h-4 w-4" />
                         All
                     </button>
-                    {desktopLinks.map(({ label, to }) => (
-                        <RouterNavLink
-                            key={to}
-                            to={to}
-                            className={({ isActive }) =>
-                                `rounded-sm border px-1.5 py-1 text-sm transition ${isActive
-                                    ? "border-white font-semibold"
-                                    : "border-transparent hover:border-white"
-                                }`
-                            }
-                        >
-                            {label}
-                        </RouterNavLink>
-                    ))}
+                    {
+                        desktopLinks.map(({ label, to }) => (
+                            <RouterNavLink
+                                key={to}
+                                to={to}
+                                className={({ isActive }) =>
+                                    `rounded-sm border px-1.5 py-1 text-sm transition ${isActive
+                                        ? "border-white font-semibold"
+                                        : "border-transparent hover:border-white"
+                                    }`
+                                }
+                            >
+                                {label}
+                            </RouterNavLink>
+                        ))
+                    }
                 </div>
             </div>
 
@@ -194,13 +275,28 @@ const NavLink = () => {
                     </Link>
 
                     <div className="flex items-center gap-3">
-                        <Link to="/login" aria-label="Sign in">
-                            <User className="h-5 w-5" />
+                        {/* CHANGED: shows the avatar (linking to /account)
+                            instead of the generic sign-in icon once logged in. */}
+                        <Link
+                            to={isAuthenticated ? "/account" : "/login"}
+                            aria-label={isAuthenticated ? "Your account" : "Sign in"}
+                        >
+                            {isAuthenticated ? (
+                                <Avatar user={user} className="h-6 w-6 text-[10px]" />
+                            ) : (
+                                <User className="h-5 w-5" />
+                            )}
+                        </Link>
+                        <Link to="/wishlist" className="relative" aria-label="Wishlist">
+                            <Heart className="h-6 w-6" />
+                            <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                                {wishlistCount}
+                            </span>
                         </Link>
                         <Link to="/cart" className="relative" aria-label="Cart">
                             <ShoppingCart className="h-6 w-6" />
                             <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-                                0
+                                {cartCount}
                             </span>
                         </Link>
                     </div>
@@ -243,8 +339,19 @@ const NavLink = () => {
                     <div className="absolute inset-0 bg-black/50" onClick={() => setMenuOpen(false)} />
                     <div className="relative flex h-full w-80 max-w-[85%] flex-col overflow-y-auto bg-white text-gray-900 shadow-xl">
                         <div className="flex items-center gap-2 bg-secondary px-4 py-4 text-white">
-                            <User className="h-8 w-8" />
-                            <span className="text-lg font-bold">Hello, sign in</span>
+                            {/* CHANGED: header shows avatar + first name when
+                                signed in, generic icon + "Hello, sign in" otherwise. */}
+                            {isAuthenticated ? (
+                                <>
+                                    <Avatar user={user} className="h-8 w-8 text-sm" />
+                                    <span className="text-lg font-bold">Hello, {user?.fullName?.split(' ')[0]}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <User className="h-8 w-8" />
+                                    <span className="text-lg font-bold">Hello, sign in</span>
+                                </>
+                            )}
                             <button onClick={() => setMenuOpen(false)} className="ml-auto" aria-label="Close menu">
                                 <X className="h-6 w-6" />
                             </button>
@@ -283,16 +390,28 @@ const NavLink = () => {
 
                         {/* Auth */}
                         <div className="px-4 py-3">
-                            <div className="flex gap-2">
-                                <Link to="/login" onClick={() => setMenuOpen(false)}
-                                    className="flex-1 rounded bg-primary py-2 text-center text-sm font-semibold text-white hover:bg-primary-dark">
-                                    Sign In
-                                </Link>
-                                <Link to="/signup" onClick={() => setMenuOpen(false)}
-                                    className="flex-1 rounded border border-gray-300 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-100">
-                                    Sign Up
-                                </Link>
-                            </div>
+                            {/* CHANGED: signed-in users get a single full-width
+                                Logout button instead of the Sign In / Sign Up pair. */}
+                            {isAuthenticated ? (
+                                <button
+                                    type="button"
+                                    onClick={handleLogout}
+                                    className="w-full rounded border border-gray-300 py-2 text-center text-sm font-semibold text-danger hover:bg-gray-100"
+                                >
+                                    Logout
+                                </button>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <Link to="/login" onClick={() => setMenuOpen(false)}
+                                        className="flex-1 rounded bg-primary py-2 text-center text-sm font-semibold text-white hover:bg-primary-dark">
+                                        Sign In
+                                    </Link>
+                                    <Link to="/signup" onClick={() => setMenuOpen(false)}
+                                        className="flex-1 rounded border border-gray-300 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-100">
+                                        Sign Up
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

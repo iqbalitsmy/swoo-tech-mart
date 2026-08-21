@@ -1,6 +1,11 @@
+import { oauthRedirectUrl } from '@/api/authApi';
 import Breadcrumb from '@/Components/Shared/Breadcrumb/Breadcrumb';
+import { useLogin } from '@/hooks/useLogin';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema } from '@/validators/authValidators';
 import { Eye, EyeOff } from 'lucide-react';
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 
 
@@ -13,17 +18,33 @@ const items = [
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
-    const [formData, setFormData] = useState({ email: '', password: '' });
 
-    const handleChange = (e) => {
-        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const {
+        register,
+        handleSubmit,
+        formState: { errors }
+    } = useForm({
+        resolver: zodResolver(loginSchema),
+        defaultValues: { email: '', password: '' },
+        mode: 'onTouched'
+    })
+
+    const { mutate: login, isPending, error } = useLogin();
+
+    const onSubmit = (data) => {
+        login(data);
+    }
+
+    const onError = (errors) => {
+        console.log("Validation errors:", errors);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // handle login logic here
-        console.log(formData);
-    };
+    const handleOAuthLogin = (provider) => {
+        window.location.href = oauthRedirectUrl(provider);
+    }
+
+    const serverError = error?.response?.data?.message || (error ? "Invalid email and password" : null);
+
     return (
         <>
             <Breadcrumb items={items} />
@@ -36,8 +57,17 @@ const LoginPage = () => {
                         LOGIN TO CONTINUE
                     </p>
 
+                    {/* Server-side error banner (e.g. wrong credentials) */}
+                    {
+                        serverError && (
+                            <div className="mt-4 rounded-md border border-danger/20 bg-danger/5 px-3 py-2 text-sm text-danger">
+                                {serverError}
+                            </div>
+                        )
+                    }
+
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+                    <form onSubmit={handleSubmit(onSubmit, onError)} noValidate  className="mt-6 space-y-5">
                         {/* Email */}
                         <div>
                             <label
@@ -48,13 +78,15 @@ const LoginPage = () => {
                             </label>
                             <input
                                 id="email"
-                                name="email"
                                 type="email"
-                                value={formData.email}
-                                onChange={handleChange}
                                 placeholder="Example@gmail.com"
-                                className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary"
+                                aria-invalid={errors.email ? 'true' : 'false'}
+                                {...register('email')}
+                                className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger"
                             />
+                            {errors.email && (
+                                <p className="mt-1 text-xs text-danger">{errors.email.message}</p>
+                            )}
                         </div>
 
                         {/* Password */}
@@ -68,12 +100,11 @@ const LoginPage = () => {
                             <div className="relative">
                                 <input
                                     id="password"
-                                    name="password"
                                     type={showPassword ? 'text' : 'password'}
-                                    value={formData.password}
-                                    onChange={handleChange}
                                     placeholder="••••••••"
-                                    className="w-full rounded-md border border-gray-200 px-3 py-2.5 pr-10 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary"
+                                    aria-invalid={errors.password ? 'true' : 'false'}
+                                    {...register('password')}
+                                    className="w-full rounded-md border border-gray-200 px-3 py-2.5 pr-10 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger"
                                 />
                                 <button
                                     type="button"
@@ -88,6 +119,11 @@ const LoginPage = () => {
                                     )}
                                 </button>
                             </div>
+                            {
+                                errors.password && (
+                                    <p className="mt-1 text-xs text-danger">{errors.password.message}</p>
+                                )
+                            }
                         </div>
 
                         {/* Forgot password */}
@@ -101,9 +137,10 @@ const LoginPage = () => {
                         {/* Submit */}
                         <button
                             type="submit"
-                            className="w-full rounded-md cursor-pointer bg-primary py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
+                            disabled={isPending}
+                            className="w-full rounded-md cursor-pointer bg-primary py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            LOGIN
+                            {isPending ? 'LOGGING IN...' : 'LOGIN'}
                         </button>
                     </form>
 
@@ -126,7 +163,7 @@ const LoginPage = () => {
                     <div className="flex flex-col gap-3">
                         <button
                             type="button"
-                            onClick={() => console.log('Google login')}
+                            onClick={() => handleOAuthLogin('google')}
                             className="flex w-full items-center justify-center gap-2 cursor-pointer rounded-md border border-gray-200 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
                         >
                             <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -152,7 +189,7 @@ const LoginPage = () => {
 
                         <button
                             type="button"
-                            onClick={() => console.log('Facebook login')}
+                            onClick={() => handleOAuthLogin('facebook')}
                             className="flex w-full items-center justify-center gap-2 cursor-pointer rounded-md bg-[#1877F2] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#166FE5]"
                         >
                             <svg className="h-4 w-4 fill-white" viewBox="0 0 24 24">

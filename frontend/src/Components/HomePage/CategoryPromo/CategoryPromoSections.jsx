@@ -1,393 +1,124 @@
 import React from "react";
 import CategoryPromoSection from "./CategoryPromoSection";
-import productImg from "../../../assets/products/laptop.jpg";
 
 import mobileBanner from "../../../assets/promo-section/mobile-banner.png"
 import laptopBanner from "../../../assets/promo-section/laptop-banner.png"
 
-import cellPhoneSmallImg from "../../../assets/promo-section/iphone.png"
-import mackBookSmallImg from "../../../assets/promo-section/mackbook.png"
+import { useGetProducts } from "@/hooks/useProduct";
+// CHANGED: reusing the useCategory/useCategories pair already built earlier
+// (in @/hooks/useCategories.js) instead of a new useCategoryList - same job,
+// and keeping one implementation means the slug->children logic can't drift
+// out of sync between two copies of essentially the same hook.
+import { useCategoryList, useCategory } from "@/hooks/useCategory";
 
-
+// CHANGED: static `subcategories` arrays and their icon imports
+// (cellPhoneSmallImg, mackBookSmallImg) removed entirely - subcategories are
+// now fetched from GET /api/categories?parentId=<id>, resolved below.
 const cellphonesSection = {
+    categorySlug: "cell-phones-and-tablets",
     title: "Top Cellphones & Tablets",
     bannerImage: mobileBanner,
     bannerHeading: "Redmi Note 12 Pro+ 5G",
     bannerSubtext: "Rise to the challenge",
     bannerCta: "Shop now",
     bannerVariant: "light",
-    subcategories: [
-        { image: cellPhoneSmallImg, name: "iPhone (iOS)", itemCount: 74 },
-        { image: cellPhoneSmallImg, name: "Android", itemCount: 35 },
-        { image: cellPhoneSmallImg, name: "5G Support", itemCount: 12 },
-        { image: cellPhoneSmallImg, name: "Gaming", itemCount: 9 },
-        { image: cellPhoneSmallImg, name: "Xiaomi", itemCount: 52 },
-        { image: cellPhoneSmallImg, name: "Accessories", itemCount: 28 },
-    ],
-    products: [
-        {
-            reviews: 152,
-            title: "BOSO 2 Wireless On Ear Headphone",
-            price: 359.0,
-            rating: 3.5,
-            oldPrice: null,
-            save: null,
-            tags: ["Free Shipping", "Free Gift"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["best-seller"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 152,
-            title: "OPod Pro 12.9 Inch M1 2023, 64GB + Wifi, GPS",
-            price: 569.0,
-            rating: 4,
-            oldPrice: 759.0,
-            save: 199.0,
-            tags: ["Free Shipping"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["best-seller", "popular"],
-            wishlist: true,
-            addToCard: true,
-        },
-        {
-            reviews: 8,
-            title: "uLosk Mini case 2.0, Xenon i10 / 32GB / SSD 512GB / VGA 8GB",
-            price: 1729.0,
-            rating: 5,
-            oldPrice: 1799.0,
-            save: 59.0,
-            tags: ["Free Shipping"],
-            stock: "out",
-            thumbnail: productImg,
-            categoryTags: ["best-seller"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: null,
-            title: "Oppto Watch Series 8 GPS + Cellular Stainless Steel Case with Milanese Loop",
-            price: 9.0,
-            rating: 3.5,
-            oldPrice: null,
-            save: null,
-            tags: ["$2.99 Shipping"],
-            stock: "preorder",
-            thumbnail: productImg,
-            categoryTags: ["best-seller", "new-in"],
-            wishlist: false,
-            addToCard: false,
-        },
-        {
-            reviews: 21,
-            title: "Vexa Smart Air Fryer 6.5L Digital Touchscreen",
-            price: 89.0,
-            rating: 4.5,
-            oldPrice: 119.0,
-            save: 30.0,
-            tags: ["Free Shipping"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["new-in"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 4,
-            title: "Norra Mechanical Keyboard 75% Hot-Swap RGB",
-            price: 79.0,
-            rating: 4,
-            oldPrice: null,
-            save: null,
-            tags: ["Free Gift"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["new-in"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 13,
-            title: "Plyno 4K Action Camera with Waterproof Case",
-            price: 149.0,
-            rating: 3.5,
-            oldPrice: 189.0,
-            save: 40.0,
-            tags: ["Free Shipping"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["new-in", "popular"],
-            wishlist: false,
-            addToCard: true,
-        },
-        {
-            reviews: null,
-            title: "Hexel Smart Door Lock with Fingerprint + App",
-            price: 129.0,
-            rating: 4,
-            oldPrice: null,
-            save: null,
-            tags: ["$4.99 Shipping"],
-            stock: "preorder",
-            thumbnail: productImg,
-            categoryTags: ["new-in"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 312,
-            title: "Bravo Insulated Water Bottle 1L Stainless Steel",
-            price: 24.0,
-            rating: 5,
-            oldPrice: 32.0,
-            save: 8.0,
-            tags: ["Free Shipping"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["popular"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 88,
-            title: "Quira Wireless Charging Pad 3-in-1 Stand",
-            price: 39.0,
-            rating: 4.5,
-            oldPrice: null,
-            save: null,
-            tags: ["Free Gift"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["popular"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 6,
-            title: "Fenro Desk Lamp with Wireless Charger Base",
-            price: 45.0,
-            rating: 4,
-            oldPrice: 59.0,
-            save: 14.0,
-            tags: ["Free Shipping"],
-            stock: "out",
-            thumbnail: productImg,
-            categoryTags: ["popular"],
-            wishlist: false,
-            addToCard: true,
-        },
-        {
-            reviews: 47,
-            title: "Liso Ceramic Cookware Set 10-Piece",
-            price: 199.0,
-            rating: 4.5,
-            oldPrice: null,
-            save: null,
-            tags: ["$5.99 Shipping"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["popular"],
-            wishlist: false,
-            addToCard: true,
-        },
-    ]
 };
 
 const laptopsSection = {
+    categorySlug: "laptop-pc-and-computers",
     title: "Best Laptops & Computers",
     bannerImage: laptopBanner,
     bannerHeading: "Mobok 2 Superchard",
     bannerSubtext: "By M2 — Start from $1199",
     bannerCta: "Shop now",
     bannerVariant: "dark",
-    subcategories: [
-        { image: mackBookSmallImg, name: "Macbook", itemCount: 74 },
-        { image: mackBookSmallImg, name: "Gaming PC", itemCount: 5 },
-        { image: mackBookSmallImg, name: "Laptop Office", itemCount: 22 },
-        { image: mackBookSmallImg, name: 'Laptop 15"', itemCount: 55 },
-        { image: mackBookSmallImg, name: "M1 2023", itemCount: 32 },
-        { image: mackBookSmallImg, name: "Secondhand", itemCount: 18 },
-    ],
-    products: [
-        {
-            reviews: 152,
-            title: "BOSO 2 Wireless On Ear Headphone",
-            price: 359.0,
-            rating: 3.5,
-            oldPrice: null,
-            save: null,
-            tags: ["Free Shipping", "Free Gift"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["best-seller"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 152,
-            title: "OPod Pro 12.9 Inch M1 2023, 64GB + Wifi, GPS",
-            price: 569.0,
-            rating: 4,
-            oldPrice: 759.0,
-            save: 199.0,
-            tags: ["Free Shipping"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["best-seller", "popular"],
-            wishlist: true,
-            addToCard: true,
-        },
-        {
-            reviews: 8,
-            title: "uLosk Mini case 2.0, Xenon i10 / 32GB / SSD 512GB / VGA 8GB",
-            price: 1729.0,
-            rating: 5,
-            oldPrice: 1799.0,
-            save: 59.0,
-            tags: ["Free Shipping"],
-            stock: "out",
-            thumbnail: productImg,
-            categoryTags: ["best-seller"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: null,
-            title: "Oppto Watch Series 8 GPS + Cellular Stainless Steel Case with Milanese Loop",
-            price: 9.0,
-            rating: 3.5,
-            oldPrice: null,
-            save: null,
-            tags: ["$2.99 Shipping"],
-            stock: "preorder",
-            thumbnail: productImg,
-            categoryTags: ["best-seller", "new-in"],
-            wishlist: false,
-            addToCard: false,
-        },
-        {
-            reviews: 21,
-            title: "Vexa Smart Air Fryer 6.5L Digital Touchscreen",
-            price: 89.0,
-            rating: 4.5,
-            oldPrice: 119.0,
-            save: 30.0,
-            tags: ["Free Shipping"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["new-in"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 4,
-            title: "Norra Mechanical Keyboard 75% Hot-Swap RGB",
-            price: 79.0,
-            rating: 4,
-            oldPrice: null,
-            save: null,
-            tags: ["Free Gift"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["new-in"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 13,
-            title: "Plyno 4K Action Camera with Waterproof Case",
-            price: 149.0,
-            rating: 3.5,
-            oldPrice: 189.0,
-            save: 40.0,
-            tags: ["Free Shipping"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["new-in", "popular"],
-            wishlist: false,
-            addToCard: true,
-        },
-        {
-            reviews: null,
-            title: "Hexel Smart Door Lock with Fingerprint + App",
-            price: 129.0,
-            rating: 4,
-            oldPrice: null,
-            save: null,
-            tags: ["$4.99 Shipping"],
-            stock: "preorder",
-            thumbnail: productImg,
-            categoryTags: ["new-in"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 312,
-            title: "Bravo Insulated Water Bottle 1L Stainless Steel",
-            price: 24.0,
-            rating: 5,
-            oldPrice: 32.0,
-            save: 8.0,
-            tags: ["Free Shipping"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["popular"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 88,
-            title: "Quira Wireless Charging Pad 3-in-1 Stand",
-            price: 39.0,
-            rating: 4.5,
-            oldPrice: null,
-            save: null,
-            tags: ["Free Gift"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["popular"],
-            wishlist: true,
-            addToCard: false,
-        },
-        {
-            reviews: 6,
-            title: "Fenro Desk Lamp with Wireless Charger Base",
-            price: 45.0,
-            rating: 4,
-            oldPrice: 59.0,
-            save: 14.0,
-            tags: ["Free Shipping"],
-            stock: "out",
-            thumbnail: productImg,
-            categoryTags: ["popular"],
-            wishlist: false,
-            addToCard: true,
-        },
-        {
-            reviews: 47,
-            title: "Liso Ceramic Cookware Set 10-Piece",
-            price: 199.0,
-            rating: 4.5,
-            oldPrice: null,
-            save: null,
-            tags: ["$5.99 Shipping"],
-            stock: "in",
-            thumbnail: productImg,
-            categoryTags: ["popular"],
-            wishlist: false,
-            addToCard: true,
-        },
-    ]
 };
 
+// Matches CategoryPromoSection's product row (sm:grid-cols-3 md:grid-cols-5)
+// - 5 fits one clean row instead of wrapping.
+const SHOWCASE_SIZE = 5;
+
+// CHANGED: SubcategoryCard expects { image, name, itemCount } (that's what
+// the old static arrays provided) but /api/categories returns
+// { id, name, slug, parentCategoryId, categoryIcon, productCount } - mapped
+// here in one place rather than inline in JSX, so both sections use the
+// exact same mapping.
+const toSubcategoryCardProps = (category) => ({
+    image: category.categoryIcon,
+    name: category.name,
+    itemCount: category.productCount,
+    slug: category.slug,
+});
+
 export default function CategoryPromoSections() {
+    const {
+        data: cellPhonesAndTablets,
+        isLoading: isCellPhonesAndTabletsLoading,
+        isError: isCellPhonesAndTabletsError,
+    } = useGetProducts(
+        cellphonesSection.categorySlug, // category
+        undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+        0, SHOWCASE_SIZE, undefined,
+    );
+
+    const {
+        data: laptopPcAndComputers,
+        isLoading: isLaptopPcAndComputersLoading,
+        isError: isLaptopPcAndComputersError,
+    } = useGetProducts(
+        laptopsSection.categorySlug, // category
+        undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+        0, SHOWCASE_SIZE, undefined,
+    );
+
+    // CHANGED: step 1 of 2 for subcategories - resolve each section's own
+    // numeric id from its slug. /api/categories?parentId= needs an id, and
+    // the only thing we have here is a slug, so this lookup is what bridges
+    // the two. (This is the same useCategory hook AllCategories.jsx uses to
+    // get a selected category's own name.)
+    const { data: cellphonesCategoryDetail } = useCategory(cellphonesSection.categorySlug);
+    const { data: laptopsCategoryDetail } = useCategory(laptopsSection.categorySlug);
+
+    // CHANGED: step 2 of 2 - now that we have each section's real id, fetch
+    // ITS children. `enabled` keeps this idle until the id lookup above
+    // resolves, instead of firing once with parentId=undefined.
+    const {
+        data: cellPhonesAndTabletsSubcategories,
+        isLoading: isCellPhonesAndTabletsSubcategoriesLoading,
+    } = useCategoryList(cellphonesCategoryDetail?.id);
+
+    const {
+        data: laptopPcAndComputersSubcategories,
+        isLoading: isLaptopPcAndComputersSubcategoriesLoading,
+    } = useCategoryList(laptopsCategoryDetail?.id);
+
+
     return (
         <div className="container mx-auto flex w-full max-w-7xl flex-col gap-4">
-            <CategoryPromoSection {...cellphonesSection} />
-            <CategoryPromoSection {...laptopsSection} />
+            <CategoryPromoSection
+                {...cellphonesSection}
+                href={`/products?category=${cellphonesSection.categorySlug}`}
+                // CHANGED: was `cellPhonesAndTablets?.data?.content` - the
+                // envelope is already unwrapped by axios.js's interceptor,
+                // so `cellPhonesAndTablets` IS the PageResponse; `.data.content`
+                // would always have been undefined.
+                products={cellPhonesAndTablets?.content ?? []}
+                isLoading={isCellPhonesAndTabletsLoading}
+                isError={isCellPhonesAndTabletsError}
+                // CHANGED: real subcategories instead of the static array,
+                // mapped to the props SubcategoryCard already expects.
+                subcategories={(cellPhonesAndTabletsSubcategories ?? []).map(toSubcategoryCardProps)}
+                isSubcategoriesLoading={isCellPhonesAndTabletsSubcategoriesLoading}
+            />
+            <CategoryPromoSection
+                {...laptopsSection}
+                href={`/products?category=${laptopsSection.categorySlug}`}
+                products={laptopPcAndComputers?.content ?? []}
+                isLoading={isLaptopPcAndComputersLoading}
+                isError={isLaptopPcAndComputersError}
+                subcategories={(laptopPcAndComputersSubcategories ?? []).map(toSubcategoryCardProps)}
+                isSubcategoriesLoading={isLaptopPcAndComputersSubcategoriesLoading}
+            />
         </div>
     );
 }

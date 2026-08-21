@@ -1,23 +1,7 @@
 import React from "react";
+import SubcategoryItem from "./SubcategoryItem";
+import { Link } from "react-router-dom";
 
-/**
- * Single subcategory row item — circular thumbnail + name + item count.
- */
-function SubcategoryItem({ image, name, itemCount }) {
-    return (
-        <a href="#" className="group flex flex-col items-center gap-2 text-center">
-            <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gray-100 transition group-hover:bg-gray-200">
-                {image ? (
-                    <img src={image} alt={name} className="h-full w-full object-cover" />
-                ) : (
-                    <span className="text-[10px] font-medium text-gray-400">Photo</span>
-                )}
-            </span>
-            <span className="text-sm font-semibold text-gray-900">{name}</span>
-            <span className="text-xs text-gray-400">{itemCount} Items</span>
-        </a>
-    );
-}
 
 export default function CategoryShowcasePanel({
     title,
@@ -25,6 +9,7 @@ export default function CategoryShowcasePanel({
     bannerOverlayLines = [],
     bannerHref = "#",
     subcategories = [],
+    isSubcategoriesLoading = false,
 }) {
     const lastLineIndex = bannerOverlayLines.length - 1;
 
@@ -35,17 +20,20 @@ export default function CategoryShowcasePanel({
                 <h2 className="text-sm font-bold uppercase tracking-wide text-gray-900">
                     {title}
                 </h2>
-                <a
-                    href="#"
+                {/* CHANGED: was a dead href="#" anchor - now links to this
+                    panel's own category listing, same target as the banner. */}
+                <Link
+                    to={bannerHref}
                     className="text-xs font-medium text-gray-400 transition hover:text-primary"
                 >
                     View All
-                </a>
+                </Link>
             </div>
 
             {/* Promo banner */}
-            <a
-                href={bannerHref}
+            {/* CHANGED: was <a href={bannerHref}> - now react-router's Link. */}
+            <Link
+                to={bannerHref}
                 className="relative mt-4 block h-40 w-full overflow-hidden rounded-lg bg-gray-900"
             >
                 {bannerImage ? (
@@ -62,36 +50,53 @@ export default function CategoryShowcasePanel({
                     </div>
                 )}
 
-                {bannerOverlayLines.length > 0 && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/10 to-transparent" />
-                )}
+                {
+                    bannerOverlayLines.length > 0 && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/10 to-transparent" />
+                    )
+                }
 
                 {bannerOverlayLines.length > 0 && (
                     <div className="absolute left-4 top-4 flex flex-col text-white">
-                        {bannerOverlayLines.map((line, i) => (
-                            <span
-                                key={i}
-                                className={
-                                    i === lastLineIndex
-                                        ? "text-lg font-bold leading-tight"
-                                        : "text-sm font-medium uppercase leading-tight opacity-90"
-                                }
-                            >
-                                {line}
-                            </span>
-                        ))}
+                        {
+                            bannerOverlayLines.map((line, i) => (
+                                <span
+                                    key={i}
+                                    className={
+                                        i === lastLineIndex
+                                            ? "text-lg font-bold leading-tight"
+                                            : "text-sm font-medium uppercase leading-tight opacity-90"
+                                    }
+                                >
+                                    {line}
+                                </span>
+                            ))
+                        }
                     </div>
                 )}
-            </a>
+            </Link>
 
             {/* Divider */}
             <div className="mt-4 border-t border-gray-100" />
 
             {/* Subcategory grid */}
             <div className="mt-5 grid grid-cols-2 gap-y-6">
-                {subcategories.map((sub) => (
-                    <SubcategoryItem key={sub.name} {...sub} />
-                ))}
+                {/* CHANGED: added a loading state - real data can be "not
+                    ready yet" in a way the old static array never was. */}
+                {
+                    isSubcategoriesLoading ? (
+                        <p className="col-span-full text-xs text-gray-400">Loading…</p>
+                    ) : (
+                        subcategories.map((sub) => (
+                            <Link
+                                key={sub.slug}
+                                to={`/products/?category=${sub.slug}`}
+                            >
+                                <SubcategoryItem {...sub} />
+                            </Link>
+                        ))
+                    )
+                }
             </div>
         </div>
     );

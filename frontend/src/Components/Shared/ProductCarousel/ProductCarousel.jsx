@@ -3,7 +3,7 @@ import ProductCard from '../Main/ProductCard/ProductCard';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 
-const ProductCarousel = ({ title, products = [], viewAllHref }) => {
+const ProductCarousel = ({ title, products = [], viewAllHref, isRelatedProductLoading }) => {
     const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", slidesToScroll: 1 });
     const [canPrev, setCanPrev] = useState(false);
     const [canNext, setCanNext] = useState(true);
@@ -35,6 +35,11 @@ const ProductCarousel = ({ title, products = [], viewAllHref }) => {
                 <h2 className="text-sm font-bold uppercase tracking-wide text-gray-900">
                     {title}
                 </h2>
+                {
+                    isRelatedProductLoading && (
+                        <p className="mb-4 text-sm text-gray-400">Loading products…</p>
+                    )
+                }
 
                 <div className="flex items-center gap-3">
                     {

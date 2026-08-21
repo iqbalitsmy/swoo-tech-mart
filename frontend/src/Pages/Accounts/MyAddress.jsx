@@ -1,32 +1,32 @@
 import React, { useState } from 'react';
 import { Plus, Pencil, Trash2, MapPin } from 'lucide-react';
 import AddAddressDialog from '@/Components/CheckoutPage/AddAddressDialog';
+import {
+    useAddresses,
+    useAddAddress,
+    useUpdateAddress,
+    useDeleteAddress,
+    useSetDefaultAddress,
+} from '@/hooks/useAddresses';
 
-const initialAddresses = [
-    {
-        id: 1,
-        label: 'Home',
-        name: 'Mark Cole',
-        phone: '+1 0231 4554 452',
-        address: '123 Green Road, Dhanmondi, Dhaka 1209',
-        isDefault: true,
-    },
-];
+const formatAddressLine = (addr) => {
+    return [addr.line1, addr.line2, addr.city, addr.state, addr.postalCode, addr.country]
+        .filter(Boolean)
+        .join(', ');
+};
 
 const MyAddress = () => {
-    const [addresses, setAddresses] = useState(initialAddresses);
+    const { data: addresses = [], isLoading, isError } = useAddresses();
+
+    console.log(addresses)
+
+    const addAddress = useAddAddress();
+    const updateAddress = useUpdateAddress();
+    const deleteAddress = useDeleteAddress();
+    const setDefaultAddress = useSetDefaultAddress();
+
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingAddress, setEditingAddress] = useState(null);
-
-    const removeAddress = (id) => {
-        setAddresses((prev) => prev.filter((a) => a.id !== id));
-    };
-
-    const setDefault = (id) => {
-        setAddresses((prev) =>
-            prev.map((a) => ({ ...a, isDefault: a.id === id }))
-        );
-    };
 
     const openAddDialog = () => {
         setEditingAddress(null);
@@ -43,21 +43,26 @@ const MyAddress = () => {
         setEditingAddress(null);
     };
 
-    const handleSaveAddress = (addressData) => {
-        setAddresses((prev) => {
-            const exists = prev.some((a) => a.id === addressData.id);
-            if (exists) {
-                // Editing: replace the matching address
-                return prev.map((a) =>
-                    a.id === addressData.id ? addressData : a
-                );
-            }
-            // Adding: if it's the first address, make it default
-            const isFirst = prev.length === 0;
-            return [...prev, { ...addressData, isDefault: isFirst }];
-        });
-        closeDialog();
+    const handleSaveAddress = (formData, editingId) => {
+        if (editingId) {
+            updateAddress.mutate(
+                { id: editingId, payload: formData },
+                { onSuccess: closeDialog }
+            );
+        } else {
+            addAddress.mutate(formData, { onSuccess: closeDialog });
+        }
     };
+
+    const handleDelete = (id) => {
+        deleteAddress.mutate(id);
+    };
+
+    const handleSetDefault = (id) => {
+        setDefaultAddress.mutate(id);
+    };
+
+    const isSaving = addAddress.isPending || updateAddress.isPending;
 
     return (
         <div>
@@ -74,7 +79,19 @@ const MyAddress = () => {
             </div>
 
             <div className="mt-5 space-y-3">
-                {addresses.map((addr) => (
+                {isLoading && (
+                    <div className="rounded-md border border-gray-200 py-10 text-center text-sm text-gray-400">
+                        Loading addresses...
+                    </div>
+                )}
+
+                {isError && (
+                    <div className="rounded-md border border-red-200 bg-red-50 py-10 text-center text-sm text-red-500">
+                        Could not load addresses. Please try again.
+                    </div>
+                )}
+
+                {!isLoading && !isError && addresses.map((addr) => (
                     <div
                         key={addr.id}
                         className="flex items-start justify-between gap-4 rounded-md border border-gray-200 p-4"
@@ -84,7 +101,7 @@ const MyAddress = () => {
                             <div>
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm font-semibold text-gray-800">
-                                        {addr.label}
+                                        {addr.type.charAt(0) + addr.type.slice(1).toLowerCase()}
                                     </p>
                                     {addr.isDefault && (
                                         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary">
@@ -93,20 +110,20 @@ const MyAddress = () => {
                                     )}
                                 </div>
                                 <p className="mt-1 text-sm text-gray-600">
-                                    {addr.name} · {addr.phone}
+                                    {addr.recipientName}
+                                    {addr.phone ? ` · ${addr.phone}` : ''}
                                 </p>
-                                <p className="text-sm text-gray-400">{addr.address}</p>
+                                <p className="text-sm text-gray-400">{formatAddressLine(addr)}</p>
 
-                                {
-                                    !addr.isDefault && (
-                                        <button
-                                            onClick={() => setDefault(addr.id)}
-                                            className="mt-2 text-xs font-medium text-primary hover:underline"
-                                        >
-                                            Set as default
-                                        </button>
-                                    )
-                                }
+                                {!addr.isDefault && (
+                                    <button
+                                        onClick={() => handleSetDefault(addr.id)}
+                                        disabled={setDefaultAddress.isPending}
+                                        className="mt-2 text-xs font-medium text-primary hover:underline disabled:opacity-60"
+                                    >
+                                        Set as default
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -120,8 +137,9 @@ const MyAddress = () => {
                             </button>
                             <button
                                 aria-label="Delete address"
-                                onClick={() => removeAddress(addr.id)}
-                                className="text-gray-400 hover:text-red-500 cursor-pointer"
+                                onClick={() => handleDelete(addr.id)}
+                                disabled={deleteAddress.isPending}
+                                className="text-gray-400 hover:text-red-500 cursor-pointer disabled:opacity-60"
                             >
                                 <Trash2 className="h-4 w-4" />
                             </button>
@@ -129,7 +147,7 @@ const MyAddress = () => {
                     </div>
                 ))}
 
-                {addresses.length === 0 && (
+                {!isLoading && !isError && addresses.length === 0 && (
                     <div className="rounded-md border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
                         No saved addresses yet.
                     </div>
@@ -141,6 +159,7 @@ const MyAddress = () => {
                     onClose={closeDialog}
                     onSave={handleSaveAddress}
                     initialData={editingAddress}
+                    isSaving={isSaving}
                 />
             )}
         </div>

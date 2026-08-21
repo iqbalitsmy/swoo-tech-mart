@@ -1,118 +1,87 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Breadcrumb from '../../Components/Shared/Breadcrumb/Breadcrumb';
-
-import PopularCategories from '../../Components/ProductsPage/PopularCategories';
-
-import products from '../../utiles/products';
 import Products from '../../Components/ProductsPage/Products';
 import AllCategories from '../../Components/ProductsPage/AllCategories/AllCategories';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '@/Components/Shared/Pagination/Pagination';
+import { useGetProducts } from '@/hooks/useProduct';
 
 const items = [
     { label: "Home", href: "/" },
-    { label: "Shop", href: "/shop" },
-    { label: "Top Cell Phones & Tablets", href: "/shop/cellphones-tablets" }
-]
+    { label: "Shop", href: "/products" }
+];
 
 const ProductsPage = () => {
     const [searchParams] = useSearchParams();
-    // const [products, setProducts] = useState([]);
-    const [totalPages, setTotalPages] = useState(1);  // NEW: tracks total page count from API
-    const [totalItems, setTotalItems] = useState(0);  // NEW: total result count for the status line
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            setLoading(true);
-            setError(null);
+    // Pull every filter/pagination value straight from the URL so the hook's
+    // queryKey changes whenever any of them change — that's what triggers refetch.
+    const category = searchParams.get('category');
+    const brand = searchParams.get('brand');
+    const tag = searchParams.get('tag');
+    const minPrice = searchParams.get('minPrice') || undefined;
+    const maxPrice = searchParams.get('maxPrice') || undefined;
+    const stockStatus = searchParams.get('stockStatus');
+    const isNew = searchParams.get('isNew') || undefined;
+    const sort = searchParams.get('sort') || undefined;
+    const page = searchParams.get('page') || undefined;
+    const size = searchParams.get('size') || undefined;
+    const q = searchParams.get('q') || undefined;
 
-            try {
-                // Pass the full query string — includes both filter params
-                // (?category=Iphone&brand=samsung…) AND the page param (?page=2),
-                // since AllCategories and Pagination both write to the same URL.
-                // The API is expected to return:
-                //   { products: [...], totalPages: number, totalItems: number }
-                const res = await fetch(`/api/products?${searchParams.toString()}`);
+    const { data, isLoading, isError, error } = useGetProducts(
+        category, brand, tag, minPrice, maxPrice, stockStatus, isNew, sort, page, size, q
+    );
 
-                if (!res.ok) throw new Error(`Server error: ${res.status}`);
+    // CHANGED: axiosInstance's response interceptor already strips the
+    // { success, message, data } envelope (see axios.js's unwrapEnvelope),
+    // so `data` from useGetProducts IS the PageResponse directly - there's
+    // no second `.data` layer to dig through here. The previous `data?.data`
+    // would always have resolved to undefined.
+    const productList = data?.content ?? [];
+    const totalPages = data?.totalPages ?? 1;
+    const totalItems = data?.totalElement ?? 0;
 
-                const data = await res.json();
-
-                // NEW: destructure pagination metadata from the response.
-                // Adjust field names if your API uses different keys
-                // (e.g. data.pages, data.count, data.pagination.total).
-                // setProducts(data.products ?? []);
-                setTotalPages(data.totalPages ?? 1);
-                setTotalItems(data.totalItems ?? data.products?.length ?? 0);
-            } catch (err) {
-                setError(err.message);
-                // setProducts([]);
-                setTotalPages(1);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProducts();
-    }, [searchParams]); // re-fetches on every URL change (filter OR page change)
-
-    const currentPage = Math.max(1, Number(searchParams.get('page') ?? 1));
 
     return (
         <div className='min-h-screen'>
             <section className='px-6'>
                 <Breadcrumb items={items} />
             </section>
-            {/* <section className='container mx-auto max-w-7xl'>
-                <PopularCategories />
-            </section> */}
-            {/* Main content: sidebar + product grid */}
-            <section className="container mx-auto mt-6 flex max-w-7xl flex-col gap-6 p-6  pb-12 rounded-xl bg-white shadow-sm lg:flex-row lg:items-start">
-                {/* Sidebar — fixed width on desktop, full width on mobile */}
+
+            <section className="container mx-auto mt-6 flex max-w-7xl flex-col gap-6 p-6 pb-12 rounded-xl bg-white shadow-sm lg:flex-row lg:items-start">
                 <aside className="w-full shrink-0 lg:w-64 xl:w-72">
-                    <AllCategories/>
+                    <AllCategories />
                 </aside>
 
-                {/* Product grid */}
                 <div className="flex-1 min-h-screen">
-
-                    <p className="mb-4 text-sm text-gray-500">
-                        {products.length} product{products.length !== 1 ? 's' : ''} found
-                        {searchParams.get('category')
-                            ? ` in "${searchParams.get('category')}"`
-                            : ''}
-                    </p>
-                    {/* Result count / status line */}
-                    {/* {!loading && !error && (
-                        <p className="mb-4 text-sm text-gray-500">
-                            {products.length} product{products.length !== 1 ? 's' : ''} found
-                            {searchParams.get('category')
-                                ? ` in "${searchParams.get('category')}"`
-                                : ''}
-                        </p>
-                    )}
-
-                    {loading && (
+                    {isLoading && (
                         <p className="mb-4 text-sm text-gray-400">Loading products…</p>
                     )}
 
-                    {error && (
+                    {isError && (
                         <p className="mb-4 text-sm text-danger">
-                            Failed to load products: {error}
+                            Failed to load products: {error?.message}
                         </p>
-                    )} */}
+                    )}
 
-                    {/* CHANGED: Products just receives the fetched array — no
-                        filtering happens here, the server already filtered it. */}
-                    <Products products={products} />
+                    {!isLoading && !isError && (
+                        <>
+                            <p className="mb-4 text-sm text-gray-500">
+                                {totalItems} product{totalItems !== 1 ? 's' : ''} found
+                                {category ? ` in "${category}"` : ''}
+                            </p>
 
-                    {/* {!loading && !error && totalPages > 1 && ( */}
-                    <div className="flex justify-center pt-4">
-                        <Pagination totalPages={5} />
-                    </div>
-                    {/* )} */}
+                            <Products products={productList} />
+
+                            {
+                                totalPages > 1 && (
+                                    <div className="flex justify-center pt-4">
+                                        <Pagination totalPages={totalPages} />
+                                    </div>
+                                )
+                            }
+                        </>
+                    )}
                 </div>
             </section>
         </div>

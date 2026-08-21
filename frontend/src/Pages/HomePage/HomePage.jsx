@@ -3,7 +3,7 @@ import CategoryHero from '../../Components/HomePage/CategoryHero';
 import ProductsTabs from '../../Components/HomePage/ProductsTabs';
 import CategoryShowcaseGrid from '../../Components/HomePage/CategoryPanel/CategoryShowcaseGrid';
 import CategoryPromoSections from '../../Components/HomePage/CategoryPromo/CategoryPromoSections';
-import RecentlyViewedSection from '../../Components/HomePage/RecentlyView/RecentlyViewedSection';
+import RecentlyViewedSection from '@/Components/Shared/RecentlyView/RecentlyViewedSection';
 
 const HomePage = () => {
     return (

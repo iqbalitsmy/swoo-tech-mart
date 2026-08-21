@@ -2,8 +2,7 @@ import React from 'react';
 
 const SubcategoryCard = ({ image, name, itemCount }) => {
     return (
-        <a
-            href="#"
+        <div
             className="group flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white p-3 transition hover:-translate-y-0.5 hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm"
         >
             <span>
@@ -27,7 +26,7 @@ const SubcategoryCard = ({ image, name, itemCount }) => {
                     )
                 }
             </span>
-        </a>
+        </div>
     );
 };
 

@@ -5,92 +5,51 @@ import StarRow from './StarRow';
 import SectionHeading from './SectionHeading';
 import { useSearchParams } from 'react-router-dom';
 import CheckBox from './CheckBox';
-
-const CATEGORY_GROUPS = [
-    {
-        name: 'Cell Phones & Tablets',
-        children: [
-            { name: 'All' },
-            { name: 'Iphone' },
-            { name: 'Samsung' },
-            { name: 'Xiaomi' },
-            { name: 'Asus' },
-            { name: 'Oppo' },
-            { name: 'Gaming Smartphone' },
-            { name: 'Ipad' },
-            { name: 'Window Tablets' },
-            { name: 'eReader' },
-            { name: 'Smartphone Chargers' },
-            { name: '5G Support Smartphone' },
-            { name: 'Smartphone Accessories' },
-            { name: 'Tablets Accessories' },
-            { name: 'Cell Phones', maxPrice: 200 },
-        ],
-    },
-];
-
-const FILTER_OPTIONS = {
-    brands: [
-        { name: 'envato', count: 14 },
-        { name: 'codecanyon', count: 6 },
-        { name: 'videohive', count: 7 },
-        { name: 'photodune', count: 18 },
-        { name: 'microlancer', count: 1 },
-    ],
-    priceRange: [0, 10000],
-    ratings: [
-        { stars: 5, count: 52 },
-        { stars: 4, count: 24 },
-        { stars: 3, count: 5 },
-        { stars: 2, count: 1 },
-    ],
-    screenSizes: ['7" & Under', '7.1" - 8.9"', '9" - 10.9"', '11" & Greater'],
-    colors: [
-        { name: 'Red', hex: '#ef4444' },
-        { name: 'Blue', hex: '#3b82f6' },
-        { name: 'Teal', hex: '#14b8a6' },
-        { name: 'Black', hex: '#111827' },
-        { name: 'White', hex: '#f9fafb' },
-        { name: 'Green', hex: '#22c55e' },
-        { name: 'Gray', hex: '#6b7280' },
-        { name: 'Purple', hex: '#a855f7' },
-    ],
-    memoryOptions: [
-        { label: '12GB', count: 4 },
-        { label: '1.5GB', count: 1 },
-        { label: '8GB', count: 3 },
-        { label: '1GB', count: 1 },
-        { label: '6GB', count: 12 },
-        { label: '512MB', count: 2 },
-        { label: '4GB', count: 6 },
-        { label: '3GB', count: 7 },
-    ],
-};
-
+import { useProductFilters } from '@/hooks/useProduct';
 
 
 const AllCategories = () => {
     const [params, setParams] = useSearchParams();
 
-    const selectedCategory = params.get('category');
-    const selectedBrands = params.getAll('brand');   // ?brand=X&brand=Y
+    // CHANGED: ?category= now stores a SLUG, not a display name - the
+    // /products/filters endpoint takes `category=<slug>`, and slugs also
+    // sidestep URL-encoding issues names like "Cell Phones & Tablets" had.
+    const selectedSlug = params.get('category');
+    const selectedBrands = params.getAll('brand');   // now brand SLUGS
     const selectedRatings = params.getAll('rating').map(Number);
     const selectedSize = params.get('screenSize');
-    const selectedColor = params.get('color');
-    const selectedMemory = params.getAll('memory');
+    const selectedColor = params.getAll('color');    // now color VALUEs (hex)
+    const selectedMemory = params.getAll('memory');  // now memory VALUEs
 
-    const setCategory = (name) => {
+    // CHANGED: the filters payload itself - categories here are contextual
+    // (top-level when selectedSlug is null, children of selectedSlug
+    // otherwise), so this single query drives both the category list AND
+    // every other facet section below.
+    const { data: filters, isLoading: isFiltersLoading } = useProductFilters(selectedSlug);
+
+    const categoryData = filters?.categories;
+
+    const parentCategory = categoryData?.parent;
+    const categories = categoryData?.categories ?? [];
+
+    const brands = filters?.brands ?? [];
+    const priceRange = filters?.priceRanges;
+    const ratings = filters?.ratings ?? [];
+    const colors = filters?.colors ?? [];
+    const memoryOptions = filters?.memory ?? [];
+
+    const setCategory = (slug) => {
         setParams((prev) => {
-            if (!name || name === 'All') {
+            if (!slug) {
                 prev.delete('category');
             } else {
-                prev.set('category', name);
+                prev.set('category', slug);
             }
             return prev;
         });
     };
 
-    // CHANGED: toggle helpers for multi-value params (brand, rating, memory).
+    // CHANGED: toggle helpers for multi-value params (brand, rating, color, memory).
     // getAll() returns an array; we add or remove the value then re-set all.
     const toggleMulti = (key, value) => {
         setParams((prev) => {
@@ -104,7 +63,7 @@ const AllCategories = () => {
         });
     };
 
-    // CHANGED: single-value params (screenSize, color) toggle on/off.
+    // CHANGED: single-value params (screenSize) toggle on/off.
     const toggleSingle = (key, value) => {
         setParams((prev) => {
             if (prev.get(key) === value) {
@@ -120,6 +79,15 @@ const AllCategories = () => {
     // object needed, just wipe the URL params.
     const handleReset = () => setParams({});
 
+    // Best-effort slug/value -> display-name lookups for chips, using
+    // whatever the CURRENT filters response has in memory. If the matching
+    // brand/memory option isn't in the current (category-scoped) list -
+    // e.g. the category changed after the brand was selected - falls back
+    // to showing the raw stored value rather than crashing or hiding the chip.
+    const brandLabel = (slug) => brands.find((b) => b.slug === slug)?.name ?? slug;
+    const memoryLabel = (value) => memoryOptions.find((m) => m.value === value)?.label ?? value;
+    const colorLabel = (value) => colors.find((c) => c.value === value)?.label ?? value;
+
     // ── Build active filter chips from current URL params ─────────────────
     // CHANGED: chips are derived directly from URL params, not from a filters
     // state object — the URL is the single source of truth.
@@ -127,9 +95,9 @@ const AllCategories = () => {
         params.get('minPrice') && { label: `Min: $${params.get('minPrice')}`, remove: () => setParams((p) => { p.delete('minPrice'); return p; }) },
         params.get('maxPrice') && { label: `Max: $${params.get('maxPrice')}`, remove: () => setParams((p) => { p.delete('maxPrice'); return p; }) },
         params.get('screenSize') && { label: params.get('screenSize'), remove: () => setParams((p) => { p.delete('screenSize'); return p; }) },
-        params.get('color') && { label: `Color: ${params.get('color')}`, remove: () => setParams((p) => { p.delete('color'); return p; }) },
-        ...params.getAll('brand').map((b) => ({ label: b, remove: () => toggleMulti('brand', b) })),
-        ...params.getAll('memory').map((m) => ({ label: m, remove: () => toggleMulti('memory', m) })),
+        ...params.getAll('color').map((c) => ({ label: `Color: ${colorLabel(c)}`, remove: () => toggleMulti('color', c) })),
+        ...params.getAll('brand').map((b) => ({ label: brandLabel(b), remove: () => toggleMulti('brand', b) })),
+        ...params.getAll('memory').map((m) => ({ label: memoryLabel(m), remove: () => toggleMulti('memory', m) })),
         ...params.getAll('rating').map((r) => ({ label: `${r}★`, remove: () => toggleMulti('rating', r) })),
     ].filter(Boolean);
 
@@ -170,43 +138,66 @@ const AllCategories = () => {
             <div className="flex flex-col gap-4">
                 <button
                     onClick={() => setCategory(null)}
-                    className={`w-fit rounded-lg border px-4 py-2 text-sm font-semibold transition ${!selectedCategory
-                        ? 'border-primary bg-primary text-white'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-primary hover:text-primary'
+                    className={`w-fit rounded-lg border px-4 py-2 text-sm font-semibold transition ${!selectedSlug
+                            ? "border-primary bg-primary text-white"
+                            : "border-gray-200 bg-white text-gray-700 hover:border-primary hover:text-primary"
                         }`}
                 >
                     All Categories
                 </button>
 
-                {
-                    CATEGORY_GROUPS.map((group) => (
-                        <div key={group.name}>
-                            <p className="text-sm font-bold text-gray-900">{group.name}</p>
-                            <ul className="mt-2 flex flex-col gap-1 pl-4">
-                                {
-                                    group.children.map((child) => (
-                                        <li key={child.name}>
-                                            {/* CHANGED: clicking a category sets ?category=Iphone in the URL
-                                        instead of calling onSelectCategory() on ProductsPage */}
-                                            <button
-                                                onClick={() => setCategory(child.name)}
-                                                className={`block w-full text-left text-sm transition hover:text-primary cursor-pointer ${selectedCategory === child.name
-                                                    ? 'font-semibold text-primary'
-                                                    : 'text-gray-600'
-                                                    }`}
-                                            >
-                                                {child.name}
-                                                {child.maxPrice && (
-                                                    <span className="ml-2 text-xs text-gray-400">${child.maxPrice}</span>
-                                                )}
-                                            </button>
-                                        </li>
-                                    ))
-                                }
-                            </ul>
-                        </div>
-                    ))
-                }
+                {parentCategory ? (
+                    <div>
+                        <p className="text-sm font-bold text-gray-900">
+                            {parentCategory.name}
+                        </p>
+
+                        <ul className="mt-2 flex flex-col gap-1 pl-4">
+                            {isFiltersLoading ? (
+                                <li className="text-xs text-gray-400">
+                                    Loading...
+                                </li>
+                            ) : categories.length > 0 ? (
+                                categories.map((category) => (
+                                    <li key={category.id}>
+                                        <button
+                                            onClick={() => setCategory(category.slug)}
+                                            className="block w-full cursor-pointer text-left text-sm text-gray-600 transition hover:text-primary"
+                                        >
+                                            {category.name}
+                                        </button>
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="text-xs text-gray-400">
+                                    No subcategories
+                                </li>
+                            )}
+                        </ul>
+                    </div>
+                ) : (
+                    <ul className="flex flex-col gap-1">
+                        {isFiltersLoading ? (
+                            <li className="text-xs text-gray-400">
+                                Loading categories...
+                            </li>
+                        ) : (
+                            categories.map((category) => (
+                                <li key={category.id}>
+                                    <button
+                                        onClick={() => setCategory(category.slug)}
+                                        className={`block w-full cursor-pointer rounded px-2 py-1 text-left text-sm font-semibold transition ${selectedSlug === category.slug
+                                                ? "bg-primary text-white"
+                                                : "text-gray-900 hover:text-primary"
+                                            }`}
+                                    >
+                                        {category.name}
+                                    </button>
+                                </li>
+                            ))
+                        )}
+                    </ul>
+                )}
             </div>
 
             <div className="border-t border-gray-200" />
@@ -220,56 +211,63 @@ const AllCategories = () => {
                     className="rounded border border-gray-200 px-3 py-1.5 text-xs outline-none focus:border-primary"
                 />
                 <div className="flex flex-col gap-2 pt-1">
-                    {
-                        FILTER_OPTIONS.brands.map((brand) => (
-                            // CHANGED: checked reads from URL ?brand= params,
-                            // onChange calls toggleMulti which appends/removes ?brand=X
+                    {isFiltersLoading ? (
+                        <p className="text-xs text-gray-400">Loading…</p>
+                    ) : (
+                        brands.map((brand) => (
+                            // CHANGED: checked/onChange now key off brand.slug
+                            // (stable identifier), display text off brand.name.
                             <CheckBox
-                                key={brand.name}
+                                key={brand.slug}
                                 label={brand.name}
-                                count={brand.count}
-                                checked={selectedBrands.includes(brand.name)}
-                                onChange={() => toggleMulti('brand', brand.name)}
+                                count={brand.productCount}
+                                checked={selectedBrands.includes(brand.slug)}
+                                onChange={() => toggleMulti('brand', brand.slug)}
                             />
                         ))
-                    }
+                    )}
                 </div>
             </div>
 
             {/* By Price */}
             <div className="flex flex-col gap-3">
                 <SectionHeading>By Price</SectionHeading>
-                {/* CHANGED: PriceRange reads/writes URL params internally,
-                    no value/onChange props needed from here */}
-                <PriceRange min={FILTER_OPTIONS.priceRange[0]} max={FILTER_OPTIONS.priceRange[1]} />
+                {/* CHANGED: priceRanges is a single { label, min, max } object
+                    from the API now, not a static two-item array. Falls back
+                    to 0–10000 while the first request is still in flight. */}
+                <PriceRange min={priceRange?.min ?? 0} max={priceRange?.max ?? 10000} />
             </div>
 
             {/* By Rating */}
             <div className="flex flex-col gap-2">
                 <SectionHeading>By Rating</SectionHeading>
-                {
-                    FILTER_OPTIONS.ratings.map(({ stars, count }) => (
-                        // CHANGED: checked reads ?rating= from URL,
-                        // onChange calls toggleMulti('rating', stars)
+                {isFiltersLoading ? (
+                    <p className="text-xs text-gray-400">Loading…</p>
+                ) : (
+                    ratings.map(({ rating, productCount }) => (
+                        // CHANGED: field names from the API are `rating` and
+                        // `productCount` (not `stars`/`count`) - mapped onto
+                        // StarRow's existing prop names here.
                         <StarRow
-                            key={stars}
-                            stars={stars}
-                            count={count}
-                            checked={selectedRatings.includes(stars)}
-                            onChange={() => toggleMulti('rating', stars)}
+                            key={rating}
+                            stars={rating}
+                            count={productCount}
+                            checked={selectedRatings.includes(rating)}
+                            onChange={() => toggleMulti('rating', rating)}
                         />
                     ))
-                }
+                )}
             </div>
 
             {/* By Screen Size */}
-            <div className="flex flex-col gap-2">
+            {/* NOTE: /products/filters doesn't return screen sizes - this
+                section has no backend-driven data source yet, so it's left
+                as a static placeholder until that facet exists on the API. */}
+            {/* <div className="flex flex-col gap-2">
                 <SectionHeading>By Screen Size</SectionHeading>
                 <div className="flex flex-wrap gap-2">
                     {
-                        FILTER_OPTIONS.screenSizes.map((size) => (
-                            // CHANGED: active state reads ?screenSize= from URL,
-                            // click calls toggleSingle('screenSize', size)
+                        ['7" & Under', '7.1" - 8.9"', '9" - 10.9"', '11" & Greater'].map((size) => (
                             <button
                                 key={size}
                                 onClick={() => toggleSingle('screenSize', size)}
@@ -283,28 +281,34 @@ const AllCategories = () => {
                         ))
                     }
                 </div>
-            </div>
+            </div> */}
 
             {/* By Color */}
             <div className="flex flex-col gap-2">
                 <SectionHeading>By Color</SectionHeading>
                 <div className="flex flex-wrap gap-2">
-                    {
-                        FILTER_OPTIONS.colors.map(({ name, hex }) => (
-                            // CHANGED: active state reads ?color= from URL
+                    {isFiltersLoading ? (
+                        <p className="text-xs text-gray-400">Loading…</p>
+                    ) : (
+                        colors.map(({ id, label, value, productCount }) => (
+                            // CHANGED: field names from the API are
+                            // `label`/`value` (not `name`/`hex`), and colors
+                            // are now multi-select (toggleMulti) since the
+                            // API models them with productCount like every
+                            // other facet, rather than single-select.
                             <button
-                                key={name}
-                                onClick={() => toggleSingle('color', name)}
-                                aria-label={name}
-                                title={name}
-                                className={`h-7 w-7 rounded-full border-2 transition cursor-pointer ${selectedColor === name
+                                key={id}
+                                onClick={() => toggleMulti('color', value)}
+                                aria-label={`${label} (${productCount})`}
+                                title={`${label} (${productCount})`}
+                                className={`h-7 w-7 rounded-full border-2 transition cursor-pointer ${selectedColor.includes(value)
                                     ? 'scale-110 border-gray-900'
                                     : 'border-transparent hover:scale-105'
                                     }`}
-                                style={{ backgroundColor: hex }}
+                                style={{ backgroundColor: value }}
                             />
                         ))
-                    }
+                    )}
                 </div>
             </div>
 
@@ -312,18 +316,21 @@ const AllCategories = () => {
             <div className="flex flex-col gap-2">
                 <SectionHeading>By Memory</SectionHeading>
                 <div className="grid grid-cols-2 gap-1">
-                    {
-                        FILTER_OPTIONS.memoryOptions.map(({ label, count }) => (
-                            // CHANGED: checked reads ?memory= from URL
+                    {isFiltersLoading ? (
+                        <p className="text-xs text-gray-400">Loading…</p>
+                    ) : (
+                        memoryOptions.map(({ id, label, value, productCount }) => (
+                            // CHANGED: checked/onChange key off `value`
+                            // (stable identifier), display text is `label`.
                             <CheckBox
-                                key={label}
+                                key={id}
                                 label={label}
-                                count={count}
-                                checked={selectedMemory.includes(label)}
-                                onChange={() => toggleMulti('memory', label)}
+                                count={productCount}
+                                checked={selectedMemory.includes(value)}
+                                onChange={() => toggleMulti('memory', value)}
                             />
                         ))
-                    }
+                    )}
                 </div>
             </div>
         </aside>

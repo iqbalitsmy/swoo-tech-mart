@@ -1,24 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import VariantSelector from "./VariantSelector";
 import PromoCallout from "./PromoCallout";
+import { Link } from "react-router-dom";
 
 
-export default function ProductInfo({ product, onColorChange, onMemoryChange }) {
-  const [selectedColor, setSelectedColor] = useState(product.defaultColor);
-  const [selectedMemory, setSelectedMemory] = useState(product.defaultMemory);
+const formatPrice = (value) =>
+  new Intl.NumberFormat('en-BD', {
+    style: 'currency',
+    currency: 'BDT',
+    maximumFractionDigits: 0,
+  }).format(value);
 
-  const colorOption = product.colorOptions.find((c) => c.value === selectedColor);
-  const memoryOption = product.memoryOptions.find((m) => m.value === selectedMemory);
 
-  const handleColorSelect = (value) => {
-    setSelectedColor(value);
-    onColorChange?.(value);
-  };
+export default function ProductInfo({ product, selectedVariant }) {
+  const highlights = [...(product.highlights ?? [])].sort((a, b) => a.sortOrder - b.sortOrder);
 
-  const handleMemorySelect = (value) => {
-    setSelectedMemory(value);
-    onMemoryChange?.(value);
-  };
+  // Shows the exact price of whatever BuyBox currently has selected, once
+  // known; otherwise falls back to the product-level min/max range.
+  const priceDisplay = selectedVariant
+    ? formatPrice(selectedVariant.price)
+    : product.minPrice === product.maxPrice
+      ? formatPrice(product.minPrice)
+      : `${formatPrice(product.minPrice)} – ${formatPrice(product.maxPrice)}`;
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -28,69 +31,49 @@ export default function ProductInfo({ product, onColorChange, onMemoryChange }) 
       </h1>
 
       <p className="text-2xl font-bold text-gray-900">
-        ${product.minPrice?.toFixed(2)} - ${product.maxPrice?.toFixed(2)}
+        {priceDisplay}
       </p>
 
-      {
-        product.highlights?.length > 0 && (
-          <ul className="flex flex-col gap-1.5">
-            {product.highlights.map((point, i) => (
-              <li key={i} className="flex gap-2 text-sm text-gray-600">
-                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gray-400" />
-                {point}
-              </li>
-            ))}
-          </ul>
-        )
-      }
+      {highlights?.length > 0 && (
+        <ul className="flex flex-col gap-1.5">
+          {highlights.map((point) => (
+            <li key={point.id} className="flex gap-2 text-sm text-gray-600">
+              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gray-400" />
+              {point.text}
+            </li>
+          ))}
+        </ul>
+      )}
 
-      {
-        product.tags?.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {product.tags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded bg-primary-light/20 px-2 py-1 text-[11px] font-semibold text-primary-dark"
-              >
-                {tag.toUpperCase()}
-              </span>
-            ))}
-          </div>
-        )
-      }
-
-      <div className="border-t border-gray-100 pt-4">
-        <VariantSelector
-          label="Color"
-          selectedLabel={colorOption?.label}
-          options={product.colorOptions}
-          selectedValue={selectedColor}
-          onSelect={handleColorSelect}
-        />
-      </div>
-
-      <VariantSelector
-        label="Memory Size"
-        selectedLabel={memoryOption?.label}
-        options={product.memoryOptions}
-        selectedValue={selectedMemory}
-        onSelect={handleMemorySelect}
-      />
+      {product.tags?.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {product.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded bg-primary-light/20 px-2 py-1 text-[11px] font-semibold text-primary-dark"
+            >
+              {tag.toUpperCase()}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="flex flex-col gap-1 border-t border-gray-100 pt-4 text-sm">
         <p>
           <span className="font-bold text-gray-900">SKU:</span>{" "}
-          <span className="text-gray-600">{product.sku}</span>
+          <span className="text-gray-600">{selectedVariant?.sku ?? product.sku}</span>
         </p>
         <p>
           <span className="font-bold text-gray-900">CATEGORY:</span>{" "}
-          <span className="text-gray-600">{product.category}</span>
+          <Link to={`/products?category=${product?.category?.slug}`} className="text-primary hover:underline">
+            {product?.category.name}
+          </Link>
         </p>
         <p>
           <span className="font-bold text-gray-900">BRAND:</span>{" "}
-          <a href="#" className="text-primary hover:underline">
-            {product.brand}
-          </a>
+          <Link to={`/products?brand=${product?.brand?.slug}`} className="text-primary hover:underline">
+            {product?.brand.name}
+          </Link>
         </p>
       </div>
     </div>

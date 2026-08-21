@@ -14,6 +14,10 @@ import MyAddress from "@/Pages/Accounts/MyAddress";
 import MyOrders from "@/Pages/Accounts/MyOrders";
 import CheckoutPage from "@/Pages/CheckoutPage/CheckoutPage";
 import OrderDetails from "@/Pages/OrderDetails/OrderDetails";
+import GuestRoute from "./GuestRoute";
+import PrivateRoute from "./PrivateRoute";
+import PaymentResultPage from "@/Components/CheckoutPage/PaymentResultPage";
+import PaymentPage from "@/Pages/PaymentPage/PaymentPage";
 
 const router = createBrowserRouter([
     {
@@ -21,66 +25,77 @@ const router = createBrowserRouter([
         element: <Main />,
         children: [
             {
-                path: "",
+                index: true,
                 element: <HomePage />,
             },
             {
-                path: "/products",
+                path: "products",
                 element: <ProductsPage />,
             },
             {
-                path: "/product-details",
+                path: "product-details/:slug",
                 element: <ProductDetailsPage />,
             },
             {
-                path: "/wishlist",
+                path: "wishlist",
                 element: <WishlistPage />,
             },
             {
-                path: "/cart",
+                path: "cart",
                 element: <CartPage />,
             },
             {
-                path: "/checkout",
+                path: "checkout",
                 element: <CheckoutPage />,
             },
             {
-                path: "/order-details",
-                element: <OrderDetails />,
+                path: "checkout/payment-result",
+                element: <PaymentResultPage />
             },
             {
-                path: "/login",
-                element: <LoginPage />,
+                path: "checkout/pay/:orderId",
+                element: <PaymentPage />
             },
             {
-                path: "/signup",
-                element: <SignupPage />,
+                element: <GuestRoute />,
+                children: [
+                    { path: "login", element: <LoginPage /> },
+                    { path: "signup", element: <SignupPage /> },
+                ],
             },
             {
-                path: "/account",
-                element: <AccountLayout />,
+                element: <PrivateRoute />,
                 children: [
                     {
-                        path: "",
-                        element: <AccountsInfo />,
+                        path: "account",
+                        element: <AccountLayout />,
+                        children: [
+                            {
+                                index: true,
+                                element: <AccountsInfo />,
+                            },
+                            {
+                                path: "password",
+                                element: <PasswordChange />,
+                            },
+                            {
+                                path: "address",
+                                element: <MyAddress />,
+                            },
+                            {
+                                path: "orders",
+                                element: <MyOrders />,
+                            },
+                            {
+                                path: "order-details/:id",
+                                element: <OrderDetails />,
+                            },
+                        ],
                     },
-                    {
-                        path: "/account/password",
-                        element: <PasswordChange />,
-                    },
-                    {
-                        path: "/account/address",
-                        element: <MyAddress />,
-                    },
-                    {
-                        path: "/account/orders",
-                        element: <MyOrders />,
-                    },
-                ]
+                ],
             },
-
-        ]
-    }
+        ],
+    },
 ])
 
 export default router;

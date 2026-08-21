@@ -34,41 +34,47 @@ export default function VariantSelector({
             </p>
 
             <div className="mt-3 flex flex-wrap gap-3">
-                {options.map((option) => {
-                    const isSelected = option.value === selectedValue;
+                {
+                    options.map((option) => {
+                        const isSelected = option.value === selectedValue;
 
-                    return (
-                        <button
-                            key={option.value}
-                            onClick={() => onSelect(option.value)}
-                            aria-pressed={isSelected}
-                            className={`flex items-center gap-2 rounded-lg border-2 px-3 py-2 text-left transition ${isSelected
+                        return (
+                            <button
+                                key={option.value}
+                                onClick={() => onSelect(option.value)}
+                                aria-pressed={isSelected}
+                                className={`flex items-center gap-2 rounded-lg border-2 px-3 py-2 text-left transition ${isSelected
                                     ? "border-primary"
                                     : "border-gray-200 hover:border-gray-300"
-                                }`}
-                        >
-                            {hasImages && option.image && (
-                                <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded bg-gray-50">
-                                    <img
-                                        src={option.image}
-                                        alt={option.label}
-                                        className="h-full w-full object-contain"
-                                    />
-                                </span>
-                            )}
-                            <span>
-                                <span className="block text-xs font-semibold text-gray-900">
-                                    {option.label}
-                                </span>
-                                {option.price != null && (
-                                    <span className="block text-xs text-gray-500">
-                                        ${option.price.toFixed(2)}
+                                    }`}
+                            >
+                                {
+                                    hasImages && option.image && (
+                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded bg-gray-50">
+                                            <img
+                                                src={option.image}
+                                                alt={option.label}
+                                                className="h-full w-full object-contain"
+                                            />
+                                        </span>
+                                    )
+                                }
+                                <span>
+                                    <span className="block text-xs font-semibold text-gray-900">
+                                        {option.label}
                                     </span>
-                                )}
-                            </span>
-                        </button>
-                    );
-                })}
+                                    {
+                                        option.price != null && (
+                                            <span className="block text-xs text-gray-500">
+                                                ${option.price.toFixed(2)}
+                                            </span>
+                                        )
+                                    }
+                                </span>
+                            </button>
+                        );
+                    })
+                }
             </div>
         </div>
     );

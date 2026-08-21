@@ -1,114 +1,98 @@
 import React, { useState } from 'react';
 
 
-const ProductDescription = ({ description }) => {
-    const [expanded, setExpanded] = useState(false);
+const ProductDescription = ({ descriptions = [] }) => {
+    const [expandedIds, setExpandedIds] = useState(() => new Set());
 
-    if (!description) return null;
+    const toggleExpanded = (id) => {
+        setExpandedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
 
-    const {
-        intro,
-        heroImage,
-        heroCaption,
-        manufacturerBody,
-        gridImages = [],
-        subSection,
-    } = description;
+    if (!descriptions || descriptions.length === 0) return null;
+
+    const sortedSections = [...descriptions].sort((a, b) => a.sortOrder - b.sortOrder);
 
     return (
-        <div className="flex w-full flex-col gap-6 rounded-xl bg-white p-6 shadow-sm text-sm text-gray-700">
-            {/* 1. Intro paragraph */}
+        <div className="flex w-full flex-col gap-8 rounded-xl bg-white p-6 shadow-sm text-sm text-gray-700">
             {
-                intro && (
-                    <p
-                        className="leading-relaxed text-gray-600"
-                        dangerouslySetInnerHTML={{ __html: intro }}
-                    />
-                )
-            }
+                sortedSections.map((section) => {
+                    const isExpanded = expandedIds.has(section.id);
+                    const images = [...(section.images ?? [])].sort((a, b) => a.sortOrder - b.sortOrder);
 
-            {/* 2. Wide hero image + caption */}
-            {
-                heroImage && (
-                    <figure className="flex flex-col gap-2">
-                        <img
-                            src={heroImage.src}
-                            alt={heroImage.alt}
-                            className="w-full rounded-lg object-cover max-h-[80vh]"
-                        />
-                        {
-                            heroCaption && (
-                                <figcaption className="text-center text-xs italic text-gray-400">
-                                    {heroCaption}
-                                </figcaption>
-                            )
-                        }
-                    </figure>
-                )
-            }
+                    return (
+                        <div key={section.id} className="flex flex-col gap-3">
+                            {section.title && (
+                                <h2 className="text-base font-bold text-gray-900">
+                                    {section.title}
+                                </h2>
+                            )}
 
-            {/* 3. From the manufacturer */}
-            {
-                manufacturerBody && (
-                    <div className="flex flex-col gap-2">
-                        <h2 className="text-base font-bold text-gray-900">
-                            From the manufacturer
-                        </h2>
-                        <p
-                            className="leading-relaxed text-gray-600"
-                            dangerouslySetInnerHTML={{ __html: manufacturerBody }}
-                        />
-                    </div>
-                )
-            }
+                            {section.body && (
+                                <>
+                                    <div
+                                        className={`relative overflow-hidden leading-relaxed text-gray-600 transition-all duration-300 ${isExpanded ? "max-h-250" : "max-h-16"
+                                            }`}
+                                    >
+                                        <p dangerouslySetInnerHTML={{ __html: section.body }} />
+                                        {!isExpanded && (
+                                            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent" />
+                                        )}
+                                    </div>
 
-            {/* 4. Two-image grid — only renders when exactly 2 images are present */}
-            {
-                gridImages.length === 2 && (
-                    <div className="grid grid-cols-2 gap-3">
-                        {
-                            gridImages.map((img, i) => (
+                                    <button
+                                        onClick={() => toggleExpanded(section.id)}
+                                        className="w-fit text-xs font-bold uppercase tracking-wide text-primary hover:text-primary-dark"
+                                    >
+                                        {isExpanded ? "Show Less" : "Show More"}
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Images: 1 -> full-width hero style, 2 -> side-by-side
+                                grid, 3+ -> a wrapping grid. No layout-hint field
+                                exists on the API for this - it's a count-based
+                                convention standing in for the old fixed
+                                heroImage/gridImages split. */}
+                            {images.length === 1 && (
                                 <img
-                                    key={i}
-                                    src={img.src}
-                                    alt={img.alt}
-                                    className="w-full rounded-lg object-cover"
+                                    src={images[0].url}
+                                    alt={images[0].altText}
+                                    className="w-full rounded-lg object-cover max-h-[80vh]"
                                 />
-                            ))
-                        }
-                    </div>
-                )
-            }
-
-            {/* 5. Collapsible sub-section */}
-            {
-                subSection && (
-                    <div className="flex flex-col gap-2">
-                        <h3 className="text-base font-bold text-gray-900">
-                            {subSection.title}
-                        </h3>
-
-                        <div
-                            className={`relative overflow-hidden leading-relaxed text-gray-600 transition-all duration-300 ${expanded ? "max-h-250" : "max-h-16"
-                                }`}
-                        >
-                            <p dangerouslySetInnerHTML={{ __html: subSection.body }} />
-
-                            {
-                                !expanded && (
-                                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent" />
-                                )
-                            }
+                            )}
+                            {images.length === 2 && (
+                                <div className="grid grid-cols-2 gap-3">
+                                    {images.map((img) => (
+                                        <img
+                                            key={img.id}
+                                            src={img.url}
+                                            alt={img.altText}
+                                            className="w-full rounded-lg object-cover"
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                            {images.length >= 3 && (
+                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                    {images.map((img) => (
+                                        <img
+                                            key={img.id}
+                                            src={img.url}
+                                            alt={img.altText}
+                                            loading='lazy'
+                                            className="w-full rounded-lg object-cover"
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
-
-                        <button
-                            onClick={() => setExpanded((prev) => !prev)}
-                            className="w-fit text-xs font-bold uppercase tracking-wide text-primary hover:text-primary-dark"
-                        >
-                            {expanded ? "Show Less" : "Show More"}
-                        </button>
-                    </div>
-                )
+                    );
+                })
             }
         </div>
     );

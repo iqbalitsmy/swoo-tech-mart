@@ -1,192 +1,25 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import ProductCard from "../Shared/Main/ProductCard/ProductCard";
-import productImg from "../../assets/products/laptop.jpg";
+// CHANGED: real data via the hook built for ProductsPage - reused as-is,
+// no new API layer needed for this widget.
+import { useGetProducts } from "@/hooks/useProduct";
 
-
+// CHANGED: `param` (used for client-side categoryTags filtering) renamed to
+// `sort`, matching the actual query param name the backend expects
+// (?sort=bestselling / ?sort=newest).
 const tabs = [
-    { label: "Best Seller", tag: "best-seller" },
-    { label: "New In", tag: "new-in" },
-    { label: "Popular", tag: "popular" },
+    { label: "Best Selling", sort: "bestselling" },
+    { label: "New In", sort: "newest" },
 ];
 
-// tab(s) it should show up under — a product can belong to more than one.
-// `tags` (Free Shipping, Free Gift, etc.) stays untouched for ProductCard's
-// own badge rendering, so the two concepts never collide.
-const products = [
-    {
-        reviews: 152,
-        title: "BOSO 2 Wireless On Ear Headphone",
-        price: 359.0,
-        rating: 3.5,
-        oldPrice: null,
-        save: null,
-        tags: ["Free Shipping", "Free Gift"],
-        stock: "in",
-        thumbnail: productImg,
-        categoryTags: ["best-seller"],
-        wishlist: true,
-        addToCard: false,
-    },
-    {
-        reviews: 152,
-        title: "OPod Pro 12.9 Inch M1 2023, 64GB + Wifi, GPS",
-        price: 569.0,
-        rating: 4,
-        oldPrice: 759.0,
-        save: 199.0,
-        tags: ["Free Shipping"],
-        stock: "in",
-        thumbnail: productImg,
-        categoryTags: ["best-seller", "popular"],
-        wishlist: true,
-        addToCard: true,
-    },
-    {
-        reviews: 8,
-        title: "uLosk Mini case 2.0, Xenon i10 / 32GB / SSD 512GB / VGA 8GB",
-        price: 1729.0,
-        rating: 5,
-        oldPrice: 1799.0,
-        save: 59.0,
-        tags: ["Free Shipping"],
-        stock: "out",
-        thumbnail: productImg,
-        categoryTags: ["best-seller"],
-        wishlist: true,
-        addToCard: false,
-    },
-    {
-        reviews: null,
-        title: "Oppto Watch Series 8 GPS + Cellular Stainless Steel Case with Milanese Loop",
-        price: 9.0,
-        rating: 3.5,
-        oldPrice: null,
-        save: null,
-        tags: ["$2.99 Shipping"],
-        stock: "preorder",
-        thumbnail: productImg,
-        categoryTags: ["best-seller", "new-in"],
-        wishlist: false,
-        addToCard: false,
-    },
-    {
-        reviews: 21,
-        title: "Vexa Smart Air Fryer 6.5L Digital Touchscreen",
-        price: 89.0,
-        rating: 4.5,
-        oldPrice: 119.0,
-        save: 30.0,
-        tags: ["Free Shipping"],
-        stock: "in",
-        thumbnail: productImg,
-        categoryTags: ["new-in"],
-        wishlist: true,
-        addToCard: false,
-    },
-    {
-        reviews: 4,
-        title: "Norra Mechanical Keyboard 75% Hot-Swap RGB",
-        price: 79.0,
-        rating: 4,
-        oldPrice: null,
-        save: null,
-        tags: ["Free Gift"],
-        stock: "in",
-        thumbnail: productImg,
-        categoryTags: ["new-in"],
-        wishlist: true,
-        addToCard: false,
-    },
-    {
-        reviews: 13,
-        title: "Plyno 4K Action Camera with Waterproof Case",
-        price: 149.0,
-        rating: 3.5,
-        oldPrice: 189.0,
-        save: 40.0,
-        tags: ["Free Shipping"],
-        stock: "in",
-        thumbnail: productImg,
-        categoryTags: ["new-in", "popular"],
-        wishlist: false,
-        addToCard: true,
-    },
-    {
-        reviews: null,
-        title: "Hexel Smart Door Lock with Fingerprint + App",
-        price: 129.0,
-        rating: 4,
-        oldPrice: null,
-        save: null,
-        tags: ["$4.99 Shipping"],
-        stock: "preorder",
-        thumbnail: productImg,
-        categoryTags: ["new-in"],
-        wishlist: true,
-        addToCard: false,
-    },
-    {
-        reviews: 312,
-        title: "Bravo Insulated Water Bottle 1L Stainless Steel",
-        price: 24.0,
-        rating: 5,
-        oldPrice: 32.0,
-        save: 8.0,
-        tags: ["Free Shipping"],
-        stock: "in",
-        thumbnail: productImg,
-        categoryTags: ["popular"],
-        wishlist: true,
-        addToCard: false,
-    },
-    {
-        reviews: 88,
-        title: "Quira Wireless Charging Pad 3-in-1 Stand",
-        price: 39.0,
-        rating: 4.5,
-        oldPrice: null,
-        save: null,
-        tags: ["Free Gift"],
-        stock: "in",
-        thumbnail: productImg,
-        categoryTags: ["popular"],
-        wishlist: true,
-        addToCard: false,
-    },
-    {
-        reviews: 6,
-        title: "Fenro Desk Lamp with Wireless Charger Base",
-        price: 45.0,
-        rating: 4,
-        oldPrice: 59.0,
-        save: 14.0,
-        tags: ["Free Shipping"],
-        stock: "out",
-        thumbnail: productImg,
-        categoryTags: ["popular"],
-        wishlist: false,
-        addToCard: true,
-    },
-    {
-        reviews: 47,
-        title: "Liso Ceramic Cookware Set 10-Piece",
-        price: 199.0,
-        rating: 4.5,
-        oldPrice: null,
-        save: null,
-        tags: ["$5.99 Shipping"],
-        stock: "in",
-        thumbnail: productImg,
-        categoryTags: ["popular"],
-        wishlist: false,
-        addToCard: true,
-    },
-];
+// CHANGED: this is a homepage showcase widget, not a full listing page - capped
+// on purpose so it doesn't try to render an entire catalog page's worth of cards.
+const SHOWCASE_SIZE = 8;
 
-// The actual filter — this is the "return products based on tags" part.
-function getProductsByTag(tag) {
-    return products.filter((product) => product.categoryTags.includes(tag));
-}
+// CHANGED: the hardcoded `products` array and `getProductsByTag()` are both
+// gone - the backend now does the filtering (via ?sort=) instead of us
+// filtering a static list by `categoryTags` client-side.
 
 const ProductsTabs = () => {
     const [activeTab, setActiveTab] = useState(0);
@@ -195,7 +28,30 @@ const ProductsTabs = () => {
     // the same array length happens to repeat.
     const [animKey, setAnimKey] = useState(0);
 
-    const activeProducts = getProductsByTag(tabs[activeTab].tag);
+    const activeSort = tabs[activeTab].sort;
+
+    // CHANGED: every other useGetProducts argument stays undefined - this
+    // widget only ever needs "N products, sorted this way", not
+    // category/brand/price filtering. Each tab's sort value gets its own
+    // cache entry, so flipping back to a previously-viewed tab is instant.
+    const { data, isLoading, isError } = useGetProducts(
+        undefined, // category
+        undefined, // brand
+        undefined, // tag
+        undefined, // minPrice
+        undefined, // maxPrice
+        undefined, // stockStatus
+        undefined, // isNew
+        activeSort, // sort
+        0,          // page
+        SHOWCASE_SIZE, // size
+        undefined,  // q
+    );
+
+    // CHANGED: axios.js's interceptor already unwraps the { success,
+    // message, data } envelope, so `data` here IS the PageResponse
+    // directly - same pattern as ProductsPage.jsx.
+    const activeProducts = data?.content ?? [];
 
     const handleTabClick = (i) => {
         setActiveTab(i);
@@ -220,12 +76,14 @@ const ProductsTabs = () => {
                         </button>
                     ))}
                 </div>
-                <a
-                    href="#"
+                {/* CHANGED: was a dead href="#" anchor - now links to the full
+                    products listing page, carrying over the same sort. */}
+                <Link
+                    to={`/products?sort=${activeSort}`}
                     className="text-xs font-medium text-gray-400 transition hover:text-primary"
                 >
                     View All
-                </a>
+                </Link>
             </div>
 
             {/* Product grid for the active tab — fades + lifts in on every switch */}
@@ -233,11 +91,31 @@ const ProductsTabs = () => {
                 key={animKey}
                 className="grid w-full grid-cols-1 gap-4 p-6 sm:grid-cols-3 md:grid-cols-4 animate-fade-in"
             >
-                {
-                    activeProducts.map((product, i) => (
-                        <ProductCard key={`${activeTab}-${i}`} product={product} />
+                {isLoading && (
+                    <p className="col-span-full text-center text-sm text-gray-400">Loading…</p>
+                )}
+
+                {isError && (
+                    <p className="col-span-full text-center text-sm text-danger">
+                        Couldn't load products right now.
+                    </p>
+                )}
+
+                {!isLoading && !isError && activeProducts.length === 0 && (
+                    <p className="col-span-full text-center text-sm text-gray-400">
+                        No products yet.
+                    </p>
+                )}
+
+                {!isLoading && !isError && (
+                    // CHANGED: key={`${activeTab}-${i}`} -> key={product.id}.
+                    // Same reasoning as the Products.jsx fix - index-based
+                    // keys risk mixing up local card state between products
+                    // when the list changes.
+                    activeProducts.map((product) => (
+                        <ProductCard key={product.id} product={product} />
                     ))
-                }
+                )}
             </div>
         </section>
     );

@@ -6,22 +6,22 @@ import HeroCarousel from './HeroCarousel';
 const categories = [
     {
         name: "Laptops",
-        href: "/products?category=laptops",
+        href: "/products?category=laptop-pc-and-computers",
         icon: <Laptop className="h-4 w-4 text-gray-400" />,
     },
     {
         name: "PC and Computers",
-        href: "/products?category=pc-and-computers",
+        href: "/products?category=laptop-pc-and-computers",
         icon: <Computer className="h-4 w-4 text-gray-400" />,
     },
     {
         name: "Cell Phones",
-        href: "/products?category=cell-phones",
+        href: "/products?category=cell-phones-and-tablets",
         icon: <Phone className="h-4 w-4 text-gray-400" />,
     },
     {
         name: "Tablets",
-        href: "/products?category=tablets",
+        href: "/products?category=cell-phones-and-tablets",
         icon: <TabletSmartphone className="h-4 w-4 text-gray-400" />,
     },
     {

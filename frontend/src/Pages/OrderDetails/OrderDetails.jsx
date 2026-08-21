@@ -1,43 +1,108 @@
-import React from 'react';
-import { Store, MessageCircle, MapPin } from 'lucide-react';
-
-const orderData = {
-    id: '67867541286800',
-    placedDate: '27 Sep 2025 13:06:06',
-    status: 'Cancelled',
-    seller: 'Western Gadgets',
-    item: {
-        name: 'iPhone XR Liquid Silicone Phone Case: Premium Liquid Silicone Back Cover - Durable and Very Reliable - Phone',
-        variant: 'Color Family: Lite Violet',
-        price: 189,
-        qty: 1,
-        image:
-            'https://images.unsplash.com/photo-1592286927505-1def25115558?w=200&q=80',
-        status: 'Cancelled',
-    },
-    address: {
-        label: 'HOME',
-        name: 'Iqbal Hossain',
-        line: 'Chatkhil Bodalcourt, Islampur, Muraim, Manikpur, Bangladesh',
-        phone: '01778955094',
-    },
-    subtotal: 189,
-    shippingFee: 150,
-    total: 339,
-    paidBy: null,
-};
+import React, { useState } from 'react';
+import { MapPin, Loader2, AlertCircle, CreditCard } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useOrderDetails, useCancelOrder, useInitiatePayment } from '@/hooks/useOrders';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/components/ui/dialog';
 
 const statusStyle = {
-    Cancelled: 'bg-gray-100 text-gray-600',
-    Delivered: 'bg-green-50 text-green-600',
-    Processing: 'bg-amber-50 text-amber-600',
-    Shipped: 'bg-blue-50 text-blue-600',
+    PENDING: 'bg-gray-100 text-gray-600',
+    CONFIRMED: 'bg-blue-50 text-blue-600',
+    SHIPPED: 'bg-indigo-50 text-indigo-600',
+    DELIVERED: 'bg-green-50 text-green-600',
+    CANCELED: 'bg-gray-100 text-gray-600',
+    REFUNDED: 'bg-purple-50 text-purple-600',
 };
+
+const statusLabel = {
+    PENDING: 'Pending',
+    CONFIRMED: 'Confirmed',
+    SHIPPED: 'Shipped',
+    DELIVERED: 'Delivered',
+    CANCELED: 'Cancelled',
+    REFUNDED: 'Refunded',
+};
+
+// Only PENDING orders are cancelable per the backend contract.
+const CANCELABLE_STATUSES = ['PENDING'];
+
+// An order is payable when it's still PENDING and its latest payment attempt
+// hasn't succeeded — covers "never paid" (PENDING) and "card declined" (FAILED),
+// but not SUCCEEDED (already paid) or terminal states like CANCELED/REFUNDED.
+const PAYABLE_ORDER_STATUSES = ['PENDING'];
+const UNPAID_PAYMENT_STATUSES = ['PENDING', 'FAILED'];
 
 const formatTaka = (n) => `৳ ${n.toLocaleString('en-US')}`;
 
+const formatDateTime = (iso) =>
+    new Date(iso).toLocaleString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+    });
+
 const OrderDetails = () => {
-    const order = orderData;
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { data: order, isLoading, isError, error } = useOrderDetails(id);
+    const cancelOrder = useCancelOrder(id);
+    const initiatePayment = useInitiatePayment();
+    const [confirmOpen, setConfirmOpen] = useState(false);
+
+    if (isLoading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center gap-2 bg-gray-50 text-sm text-gray-400">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading order...
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="mx-auto mt-10 max-w-md rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+                <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    {error?.response?.data?.message || 'Failed to load this order.'}
+                </div>
+            </div>
+        );
+    }
+
+    const itemCount = order.items?.length ?? 0;
+    const isCancelable = CANCELABLE_STATUSES.includes(order.status);
+    const isPayable =
+        order.paymentProvider === 'STRIPE' &&
+        PAYABLE_ORDER_STATUSES.includes(order.status) &&
+        UNPAID_PAYMENT_STATUSES.includes(order.latestPaymentStatus);
+
+    const handleConfirmCancel = () => {
+        cancelOrder.mutate(undefined, {
+            onSuccess: () => setConfirmOpen(false),
+            // Dialog stays open on failure so the user sees the inline error below.
+        });
+    };
+
+    const handlePayNow = () => {
+        initiatePayment.mutate(order.id, {
+            onSuccess: (payment) => {
+                if (!payment?.clientSecret) {
+                    toast.error('Could not start payment. Please try again.');
+                    return;
+                }
+                navigate(`/checkout/pay/${order.id}`, {
+                    state: { clientSecret: payment.clientSecret, amount: payment.amount },
+                });
+            },
+            onError: () => toast.error('Could not start payment. Please try again.'),
+        });
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 px-4 py-8">
@@ -46,102 +111,108 @@ const OrderDetails = () => {
                     Order Details
                 </h1>
 
-                {/* Seller + item card */}
+                {/* Items card */}
                 <div className="rounded-md bg-white shadow-sm">
-                    {/* Seller header */}
+
                     <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-                        <div className="flex items-center gap-3">
-                            <Store className="h-4 w-4 text-gray-600" />
-                            <span className="text-sm font-semibold text-gray-800">
-                                {order.seller}
-                            </span>
-                            <button className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-                                <MessageCircle className="h-4 w-4" />
-                                Chat with Seller
-                            </button>
-                        </div>
+                        <span className="text-sm font-semibold text-gray-800">
+                            {order.orderNumber}
+                        </span>
                         <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyle[order.status] || 'bg-gray-100 text-gray-600'
-                                }`}
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyle[order.status] || 'bg-gray-100 text-gray-600'}`}
                         >
-                            {order.status}
+                            {statusLabel[order.status] ?? order.status}
                         </span>
                     </div>
 
-                    {/* Item row */}
-                    <div className="flex gap-4 px-5 py-5">
-                        <img
-                            src={order.item.image}
-                            alt={order.item.name}
-                            className="h-20 w-20 shrink-0 rounded object-cover"
-                        />
+                    {order.items?.map((item) => (
+                        <div key={item.id} className="flex gap-4 border-b border-gray-50 px-5 py-5 last:border-b-0">
+                            <div className="h-20 w-20 shrink-0 rounded bg-gray-100" />
 
-                        <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-gray-800">
-                                {order.item.name}
-                            </p>
-                            <p className="mt-1 text-xs text-gray-400">
-                                {order.item.variant}
-                            </p>
-                            <p className="mt-1 text-xs">
-                                <span className="text-gray-500">{order.item.status}</span>
-                                {' - '}
-                                <button className="font-medium text-primary hover:underline">
-                                    MORE DETAILS
-                                </button>
-                            </p>
-                        </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-gray-800">
+                                    {item.productTitleSnapshot}
+                                </p>
+                                <p className="mt-1 text-xs text-gray-400">
+                                    SKU: {item.skuSnapshot}
+                                </p>
+                            </div>
 
-                        <div className="shrink-0 text-right">
-                            <p className="text-sm font-semibold text-gray-800">
-                                {formatTaka(order.item.price)}
-                            </p>
-                        </div>
+                            <div className="shrink-0 text-right">
+                                <p className="text-sm font-semibold text-gray-800">
+                                    {formatTaka(item.unitPrice)}
+                                </p>
+                            </div>
 
-                        <div className="shrink-0 text-right text-sm text-gray-500">
-                            Qty: <span className="font-medium text-gray-700">{order.item.qty}</span>
+                            <div className="shrink-0 text-right text-sm text-gray-500">
+                                Qty: <span className="font-medium text-gray-700">{item.quantity}</span>
+                            </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
 
-                {/* Order meta */}
-                <div className="mt-4 rounded-md bg-white px-5 py-4 shadow-sm">
-                    <p className="text-sm font-medium text-gray-700">
-                        Order {order.id}
-                    </p>
-                    <p className="mt-0.5 text-xs text-gray-400">
-                        Placed on {order.placedDate}
-                    </p>
+                {/* Order meta + actions */}
+                <div className="mt-4 flex items-center justify-between rounded-md bg-white px-5 py-4 shadow-sm">
+                    <div>
+                        <p className="text-sm font-medium text-gray-700">
+                            Order {order.orderNumber}
+                        </p>
+                        <p className="mt-0.5 text-xs text-gray-400">
+                            Placed on {formatDateTime(order.createdAt)}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {isPayable && (
+                            <button
+                                onClick={handlePayNow}
+                                disabled={initiatePayment.isPending}
+                                className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
+                            >
+                                {initiatePayment.isPending ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                    <CreditCard className="h-3.5 w-3.5" />
+                                )}
+                                {initiatePayment.isPending ? 'Starting...' : 'Pay Now'}
+                            </button>
+                        )}
+
+                        {isCancelable && (
+                            <button
+                                onClick={() => setConfirmOpen(true)}
+                                className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50"
+                            >
+                                Cancel Order
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Address + Total summary */}
                 <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                    {/* Delivery address */}
                     <div className="rounded-md bg-white p-5 shadow-sm">
                         <div className="flex items-start gap-2">
                             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
                             <div>
                                 <p className="text-sm font-semibold text-gray-800">
-                                    {order.address.name}
+                                    {order.shippingSnapshot?.recipientName}
                                 </p>
-
-                                <div className="mt-2 flex items-start gap-2">
-                                    <span className="shrink-0 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold uppercase text-white">
-                                        {order.address.label}
-                                    </span>
-                                    <p className="text-sm text-gray-600">
-                                        {order.address.line}
-                                    </p>
-                                </div>
-
-                                <p className="mt-3 text-sm text-gray-600">
-                                    {order.address.phone}
+                                <p className="mt-2 text-sm text-gray-600">
+                                    {
+                                        [
+                                            order.shippingSnapshot?.line1,
+                                            order.shippingSnapshot?.line2,
+                                            order.shippingSnapshot?.city,
+                                            order.shippingSnapshot?.state,
+                                            order.shippingSnapshot?.postalCode,
+                                        ].filter(Boolean).join(', ')
+                                    }
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Total summary */}
                     <div className="rounded-md bg-white p-5 shadow-sm">
                         <h2 className="text-lg font-semibold text-gray-700">
                             Total Summary
@@ -149,16 +220,12 @@ const OrderDetails = () => {
 
                         <div className="mt-3 space-y-2 text-sm">
                             <div className="flex justify-between text-gray-500">
-                                <span>Subtotal (1 Item)</span>
-                                <span className="text-gray-700">
-                                    {formatTaka(order.subtotal)}
-                                </span>
+                                <span>Subtotal ({itemCount} {itemCount === 1 ? 'Item' : 'Items'})</span>
+                                <span className="text-gray-700">{formatTaka(order.subtotal)}</span>
                             </div>
                             <div className="flex justify-between text-gray-500">
                                 <span>Shipping Fee</span>
-                                <span className="text-gray-700">
-                                    {formatTaka(order.shippingFee)}
-                                </span>
+                                <span className="text-gray-700">{formatTaka(order.shippingFee)}</span>
                             </div>
                         </div>
 
@@ -166,19 +233,57 @@ const OrderDetails = () => {
                             <div className="flex justify-between">
                                 <span className="font-medium text-gray-700">Total</span>
                                 <span className="text-base font-bold text-primary">
-                                    {formatTaka(order.total)}
+                                    {formatTaka(order.totalAmount)}
                                 </span>
                             </div>
                             <div className="flex justify-between text-gray-500">
-                                <span>Paid by</span>
+                                <span>Payment</span>
                                 <span className="text-gray-700">
-                                    {order.paidBy || '—'}
+                                    {order.paymentProvider} — {statusLabel[order.latestPaymentStatus] ?? order.latestPaymentStatus}
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Cancel confirmation dialog */}
+            <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Cancel this order?</DialogTitle>
+                        <DialogDescription>
+                            Order <span className="font-medium text-gray-700">{order.orderNumber}</span> will be
+                            cancelled and reserved stock will be released. This can't be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {cancelOrder.isError && (
+                        <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                            <AlertCircle className="h-4 w-4 shrink-0" />
+                            {cancelOrder.error?.response?.data?.message || 'Could not cancel this order. Please try again.'}
+                        </div>
+                    )}
+
+                    <DialogFooter>
+                        <button
+                            onClick={() => setConfirmOpen(false)}
+                            disabled={cancelOrder.isPending}
+                            className="rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                            Keep Order
+                        </button>
+                        <button
+                            onClick={handleConfirmCancel}
+                            disabled={cancelOrder.isPending}
+                            className="flex items-center gap-2 rounded-md bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-50"
+                        >
+                            {cancelOrder.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {cancelOrder.isPending ? 'Cancelling...' : 'Yes, Cancel Order'}
+                        </button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
