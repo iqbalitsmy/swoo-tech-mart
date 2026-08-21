@@ -54,6 +54,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.FORBIDDEN, "You don't have permission to perform this action", request, null);
     }
 
+    @ExceptionHandler(PaymentGatewayException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentGatewayException(PaymentGatewayException e, HttpServletRequest request){
+        return build(HttpStatus.BAD_GATEWAY, "Payment provider is currently unavailable, please try again", request, null);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request){
         Map<String, String> fieldErrors = new HashMap<>();

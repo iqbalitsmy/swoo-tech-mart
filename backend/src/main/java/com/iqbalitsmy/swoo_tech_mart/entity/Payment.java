@@ -39,6 +39,10 @@ public class Payment {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
 
+    @Column(nullable = false, length = 3)
+    @Builder.Default
+    private String currency = "usd";
+
     private String failureReason;
 
     @Column(nullable = false, updatable = false)
