@@ -31,6 +31,10 @@ public class ReviewController {
         return ApiResponse.success("Reviews fetched", reviewService.listForProduct(id, page, size, sort, viewerId));
     }
 
+    /**
+     * Determines whether the current user is allowed to submit a review
+     * for the product and returns the reason when they are not eligible.
+     */
     @GetMapping("/api/products/{id}/review-eligibility")
     public ApiResponse<ReviewEligibilityResponse> getEligibility(
             @PathVariable Long id,
