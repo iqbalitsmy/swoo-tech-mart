@@ -25,13 +25,15 @@ public record ProductDetailResponse(
         List<ProductImageResponse>  images,
         List<ProductHighlightResponse> highlights,
         List<ProductVariantSummaryResponse> variants,
+        List<ProductDescriptionSectionResponse> descriptions,
         Instant createdAt
 ) {
     public static  ProductDetailResponse fromEntity(
             Product product,
             List<ProductImageResponse> images,
             List<ProductHighlightResponse> highlight,
-            List<ProductVariantSummaryResponse> variants
+            List<ProductVariantSummaryResponse> variants,
+            List<ProductDescriptionSectionResponse> descriptions
     ){
         return   new ProductDetailResponse(
                 product.getId(),
@@ -48,6 +50,7 @@ public record ProductDetailResponse(
                 images,
                 highlight,
                 variants,
+                descriptions,
                 product.getCreatedAt()
         );
     }

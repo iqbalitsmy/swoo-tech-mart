@@ -7,14 +7,15 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "wishlist_item", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_wishlist_item_variant", columnNames = {"wishlist_id", "product_variant_id"})
+        @UniqueConstraint(name = "uk_wishlist_item_product", columnNames = {"wishlist_id", "product_id"})
 })
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class WishlistItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,8 +25,8 @@ public class WishlistItem {
     private Wishlist wishlist;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_variant_id", nullable = false)
-    private ProductVariant productVariant;
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(nullable = false, updatable = false)
     private Instant addedAt;

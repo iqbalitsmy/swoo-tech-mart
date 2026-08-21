@@ -69,14 +69,13 @@ spring:
 # ---------- App / JWT settings ----------
 app:
   jwt:
-    secret: ${JWT_SECRET:c3dvby10ZWNoLW1hcnQtc3VwZXItc2VjcmV0LWtleS1jaGFuZ2UtbWUtaW4tcHJvZHVjdGlvbg==}
+    secret: ${JWT_SECRET:==}
     access-token-expiration-ms: 900000
     refresh-token-expiration-ms: 604800000
+    refresh-cookie-secure: ${JWT_REFRESH_COOKIE_SECURE:true}
   oauth2:
     authorized-redirect-uris:
       - http://localhost:5173/oauth2/redirect
-  payments:
-    webhook-secret: X
 
   shipping:
     flat-fee: 5.00
@@ -97,3 +96,24 @@ app:
 #  level:
 #    org.springframework.security: INFO
 #    com.swootechmart: DEBUG
+
+
+# Add inside the existing `app:` block in application.yml
+
+
+  payments:
+    # existing mock webhook-secret stays as-is, still used by MockPaymentGatewayClient
+    webhook-secret: ${PAYMENTS_WEBHOOK_SECRET:dev-only-webhook-shared-secret-change-me}
+
+    # NEW — Stripe-specific config
+    stripe:
+      # Secret key from https://dashboard.stripe.com/test/apikeys (starts with sk_test_ in test mode).
+      # NEVER commit a real key — always inject via env var in every environment past local dev.
+      secret-key: ${STRIPE_SECRET_KEY:}
+      # Signing secret for the specific webhook endpoint you register in the Stripe
+      # Dashboard (or the one printed by `stripe listen` locally — see explanation below).
+      webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+
+    # NEW — used by PaymentService when building each Payment row, and as
+    # StripePaymentGatewayClient's fallback if Payment.currency is somehow null
+    currency: usd

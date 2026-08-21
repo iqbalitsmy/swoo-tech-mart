@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * One Specification per query param on GET /api/products. ProductService
@@ -19,20 +20,47 @@ public class ProductSpecifications {
 
     private ProductSpecifications(){}
 
-    static Specification<Product> categoryId(Long categoryId){
-//        if(categoryId == null) return null;
-        if (categoryId == null) {
+//    static Specification<Product> categoryId(Long categoryId){
+////        if(categoryId == null) return null;
+//        if (categoryId == null) {
+//            return (root, query, cb) -> cb.conjunction();
+//        }
+//        return (root, query, cb) -> cb.equal(root.get("category").get("id"), categoryId);
+//    }
+
+//    static Specification<Product> categorySlug(String slug){
+////        if (!StringUtils.hasText(slug)) return null;
+//        if (!StringUtils.hasText(slug)) {
+//            return (root, query, cb) -> cb.conjunction();
+//        }
+//        return (root, query, cb) -> cb.equal(root.get("category").get("slug"), slug);
+//    }
+
+    static Specification<Product> categorySlug(String categorySlug, CategoryService categoryService){
+//        if (!StringUtils.hasText(slug)) return null;
+        if (!StringUtils.hasText(categorySlug)) {
             return (root, query, cb) -> cb.conjunction();
         }
-        return (root, query, cb) -> cb.equal(root.get("category").get("id"), categoryId);
+        return (root, query, cb) -> {
+            List<Long> categoryIds = categoryService.resolveCategoryIds(categorySlug);
+            return root.get("category").get("id").in(categoryIds);
+        };
     }
 
-    static Specification<Product> brandId(Long brandId){
-//        if(brandId == null) return null;
-        if(brandId == null) {
+//    static Specification<Product> brandId(Long brandId){
+////        if(brandId == null) return null;
+//        if(brandId == null) {
+//            return (root, query, cb) -> cb.conjunction();
+//        }
+//        return (root, query, cb) -> cb.equal(root.get("brand").get("id"), brandId);
+//    }
+
+    static Specification<Product> brandSlug(String slug){
+//        if (!StringUtils.hasText(slug)) return null;
+        if (!StringUtils.hasText(slug)) {
             return (root, query, cb) -> cb.conjunction();
         }
-        return (root, query, cb) -> cb.equal(root.get("brand").get("id"), brandId);
+        return (root, query, cb) -> cb.equal(root.get("brand").get("slug"), slug);
     }
 
     static Specification<Product> tagLabel(String tag){

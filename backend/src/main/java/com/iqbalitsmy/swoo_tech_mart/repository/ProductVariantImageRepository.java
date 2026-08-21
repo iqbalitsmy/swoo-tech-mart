@@ -12,4 +12,6 @@ public interface ProductVariantImageRepository extends JpaRepository<ProductVari
     List<ProductVariantImage> findByProductVariant_IdOrderBySortOrderAsc(Long productVariantId);
 
     Optional<ProductVariantImage> findByIdAndProductVariant_Id(Long id, Long productVariantId);
+
+    List<ProductVariantImage> findByProductVariant_IdInOrderByProductVariant_IdAscSortOrderAsc(List<Long> productVariantIds);
 }

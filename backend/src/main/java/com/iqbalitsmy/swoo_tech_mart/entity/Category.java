@@ -25,6 +25,9 @@ public class Category {
     @JoinColumn(name = "parent_category_id")
     private Category parentCategory;
 
+    @Column(length = 255)
+    private String iconUrl;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -30,17 +30,26 @@ public class CheckoutSummaryService {
     private final CouponRepository couponRepository;
     private final ShippingFeeCalculator shippingFeeCalculator;
 
+    /**
+     * Builds the checkout price summary for the selected address and coupon.
+     *
+     * Calculates the current cart subtotal, shipping fee, applicable coupon
+     * discount, final total, and any cart issues such as insufficient stock.
+     */
+
     @Transactional(readOnly = true)
     public CheckoutSummaryResponse summarize(Long userId, Long selectedAddressId, String couponCode) {
         Address address = addressRepository.findByIdAndUser_Id(selectedAddressId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Address not found wit id: " + selectedAddressId));
         List<CartItemResponse> items = cartService.getCart(userId, null).response().items();
 
+        // Calculate prices using the current product/variant prices from the cart.
         BigDecimal subtotal = items.stream()
                 .map(item -> item.currentPrice().multiply(BigDecimal.valueOf(item.quantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal shippingFee = shippingFeeCalculator.calculate(subtotal);
 
+        // Coupon is only evaluated when the customer provides a code.
         CouponPreviewResponse couponPreview = StringUtils.hasText(couponCode)
                 ? evaluateCoupon(couponCode, subtotal)
                 : null;
@@ -51,6 +60,7 @@ public class CheckoutSummaryService {
 
         BigDecimal totalAmount = subtotal.add(shippingFee).subtract(discountAmount);
 
+        // Never allow the checkout total to become negative.
         if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
             totalAmount = BigDecimal.ZERO;
         }
@@ -72,6 +82,9 @@ public class CheckoutSummaryService {
 
     // -------helpers----
 
+    /**
+     * Validates the coupon against the current subtotal and calculates its discount.
+     */
     private CouponPreviewResponse evaluateCoupon(String rawCode, BigDecimal subtotal) {
         String code = rawCode.trim().toUpperCase();
 
@@ -112,6 +125,9 @@ public class CheckoutSummaryService {
 
     }
 
+    /**
+     * Checks whether the cart can proceed to checkout.
+     */
     private List<String> collectIssues(List<CartItemResponse> items) {
         List<String> issues = new ArrayList<>();
 

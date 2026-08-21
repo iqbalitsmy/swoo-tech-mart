@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,16 +27,20 @@ public class CategoryService {
         List<Category>  categories = parentId == null ? categoryRepository.findByParentCategoryIsNullOrderByNameAsc()
                 : categoryRepository.findByParentCategory_IdOrderByNameAsc(parentId);
 
-        return categories.stream().map(CategoryResponse::fromEntity).toList();
+        return categories.stream()
+                .map(category -> CategoryResponse.fromEntity(
+                        category,
+                        productRepository.countByCategory_Id(category.getId())
+                ))
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public CategoryResponse getBySlug(String slug){
-        return CategoryResponse.fromEntity(
-                categoryRepository.findBySlugIgnoreCase(slug).orElseThrow(
-                    () -> new ResourceNotFoundException("Category not found with slug: " + slug)
-                    )
+        Category category = categoryRepository.findBySlugIgnoreCase(slug).orElseThrow(
+                () -> new ResourceNotFoundException("Category not found with slug: " + slug)
         );
+        return CategoryResponse.fromEntity( category, productRepository.countByCategory_Id(category.getId()));
     }
 
     //----- admin writes----
@@ -50,7 +55,7 @@ public class CategoryService {
                 .slug(request.slug())
                 .parentCategory(resolveParent(request.parentCategoryId(), null))
                 .build();
-        return CategoryResponse.fromEntity(categoryRepository.save(category));
+        return CategoryResponse.fromEntity(categoryRepository.save(category), productRepository.countByCategory_Id(category.getId()));
     }
 
     @Transactional
@@ -65,7 +70,7 @@ public class CategoryService {
         category.setSlug(request.slug());
         category.setParentCategory(resolveParent(request.parentCategoryId(), id));
 
-        return CategoryResponse.fromEntity(categoryRepository.save(category));
+        return CategoryResponse.fromEntity(categoryRepository.save(category), productRepository.countByCategory_Id(category.getId()));
     }
 
     @Transactional
@@ -81,6 +86,24 @@ public class CategoryService {
         }
 
         categoryRepository.delete(category);
+    }
+
+    public List<Long> resolveCategoryIds(String categorySlug) {
+        Category category = categoryRepository.findBySlugIgnoreCase(categorySlug)
+                .orElseThrow(() -> new ResourceNotFoundException( "Category not found with this slug: "+categorySlug));
+
+        List<Long> ids = new ArrayList<>();
+        ids.add(category.getId());
+        collectChildIds(category.getId(), ids);
+        return ids;
+    }
+
+    private void collectChildIds(Long parentId, List<Long> accumulator) {
+        List<Category> children = categoryRepository.findByParentCategory_IdOrderByNameAsc(parentId);
+        for (Category child : children) {
+            accumulator.add(child.getId());
+            collectChildIds(child.getId(), accumulator); // recurse in case you ever add a 3rd level
+        }
     }
 
     //-----helper function----

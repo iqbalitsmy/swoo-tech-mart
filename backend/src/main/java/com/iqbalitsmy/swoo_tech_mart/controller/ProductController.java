@@ -21,8 +21,8 @@ public class ProductController {
     // Filters/searches the product catalog (category, brand, tag, price range, stock, keyword) with pagination + sorting.
     @GetMapping
     public ApiResponse<PageResponse<ProductSummaryResponse>> search(
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) Long brandId,
+            @RequestParam(required = false) String categorySlug,
+            @RequestParam(required = false) String brandSlug,
             @RequestParam(required = false) String tag,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
@@ -34,7 +34,7 @@ public class ProductController {
             @RequestParam(required = false) String q
     ) {
         var results = productService.search(
-                categoryId, brandId, tag, minPrice, maxPrice, stockStatus, isNew, sort, page, size, q);
+                categorySlug, brandSlug, tag, minPrice, maxPrice, stockStatus, isNew, sort, page, size, q);
         return ApiResponse.success("Products fetched", results);
     }
 

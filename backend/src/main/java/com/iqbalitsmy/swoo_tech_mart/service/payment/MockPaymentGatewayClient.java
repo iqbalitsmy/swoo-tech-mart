@@ -1,6 +1,7 @@
 package com.iqbalitsmy.swoo_tech_mart.service.payment;
 
 import com.iqbalitsmy.swoo_tech_mart.entity.Payment;
+import com.iqbalitsmy.swoo_tech_mart.entity.enums.PaymentProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -21,23 +22,54 @@ public class MockPaymentGatewayClient implements PaymentGatewayClient {
     private final String webhookSecret;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public MockPaymentGatewayClient( @Value("${app.payments.webhook-secret}") String webhookSecret) {
+    public MockPaymentGatewayClient(@Value("${app.payments.webhook-secret}") String webhookSecret) {
         this.webhookSecret = webhookSecret;
     }
 
     @Override
-    public GatewayInitiationResult initiate(Payment payment) {
-        String reference = payment.getProvider().name().toLowerCase()+"_"+ UUID.randomUUID();
-        String clientSecret = reference+"_"+UUID.randomUUID();
-        String redirectUrl="https://mock-gatway.local/checkout/"+reference;
-
-        log.info("Mock gateway: initiated payment {} for order {} ({} {})", reference, payment.getOrder().getId(), payment.getAmount(), payment.getProvider());
-
-        return new  GatewayInitiationResult(reference, clientSecret, redirectUrl);
+    public boolean supports(PaymentProvider provider) {
+        return provider != PaymentProvider.STRIPE;
     }
 
     @Override
-    public boolean verifyWebhookSignature(String rawBody, String signatureHeader) {
+    public GatewayInitiationResult initiate(Payment payment) {
+        String reference = payment.getProvider().name().toLowerCase() + "_" + UUID.randomUUID();
+        String clientSecret = reference + "_secret_" + UUID.randomUUID();
+        String redirectUrl = "https://mock-gateway.local/checkout/" + reference;
+
+        log.info("Mock gateway: initiated payment {} for order {} ({} {})",
+                reference, payment.getOrder().getId(), payment.getAmount(), payment.getProvider());
+
+        return new GatewayInitiationResult(reference, clientSecret, redirectUrl);
+    }
+
+    @Override
+    public GatewayInitiationResult retrieve(String providerReference) {
+        String clientSecret = providerReference + "_secret_" + UUID.randomUUID();
+        String redirectUrl = "https://mock-gateway.local/checkout/" + providerReference;
+        return new GatewayInitiationResult(providerReference, clientSecret, redirectUrl);
+    }
+
+    @Override
+    public WebhookVerificationResult verifyAndParseWebhook(String rawBody, String signatureHeader) {
+        if (!verifySignature(rawBody, signatureHeader)) {
+            return WebhookVerificationResult.invalidSignature();
+        }
+
+        try {
+            JsonNode node = objectMapper.readTree(rawBody);
+            String providerReference = node.path("providerReference").asText(null);
+            String status = node.path("status").asText("");
+            String failureReason = node.path("failureReason").asText(null);
+
+            return WebhookVerificationResult.verified(
+                    new GatewayWebhookEvent(providerReference, "SUCCEEDED".equalsIgnoreCase(status), failureReason));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Malformed webhook payload: " + e.getMessage(), e);
+        }
+    }
+
+    private boolean verifySignature(String rawBody, String signatureHeader) {
         if (signatureHeader == null || signatureHeader.isBlank()) return false;
 
         try {
@@ -52,20 +84,6 @@ public class MockPaymentGatewayClient implements PaymentGatewayClient {
         } catch (Exception e) {
             log.warn("Webhook signature verification failed to compute: {}", e.getMessage());
             return false;
-        }
-    }
-
-    @Override
-    public GatewayWebhookEvent parseWebhookEvent(String rawBody) {
-        try {
-            JsonNode node = objectMapper.readTree(rawBody);
-            String providerReference = node.path("providerReference").asText(null);
-            String status = node.path("status").asText("");
-            String failureReason = node.path("failureReason").asText(null);
-
-            return new GatewayWebhookEvent(providerReference, "SUCCEEDED".equalsIgnoreCase(status), failureReason);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Malformed webhook payload: " + e.getMessage(), e);
         }
     }
 }

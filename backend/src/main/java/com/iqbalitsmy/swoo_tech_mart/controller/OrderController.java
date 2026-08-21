@@ -30,7 +30,7 @@ public class OrderController {
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false)OrderStatus status
+            @RequestParam(required = false) OrderStatus status
             ){
         return ApiResponse.success("Orders fetched", orderService.listForUser(principal.getId(), page, size, status));
     }

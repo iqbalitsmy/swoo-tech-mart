@@ -22,4 +22,6 @@ public interface CategoryRepository extends JpaRepository<Category,Long> {
     // Checks whether a category has any child categories — use this before deleting/archiving a category to guard against orphaning its subtree.
     boolean existsByParentCategory_Id(Long parentId);
 
+    List<Category> findByParentCategory_SlugIgnoreCaseOrderByNameAsc(String slug);
+
 }

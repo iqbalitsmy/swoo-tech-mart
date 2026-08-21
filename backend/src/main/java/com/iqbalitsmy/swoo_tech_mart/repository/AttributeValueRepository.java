@@ -9,4 +9,6 @@ public interface AttributeValueRepository extends JpaRepository<AttributeValue,L
     List<AttributeValue> findByAttributeType_IdOrderByLabelAsc(Long attributeTypeId);
 
     boolean existsByAttributeType_IdAndValueIgnoreCase(Long attributeTypeId,String value);
+
+    List<AttributeValue> findByAttributeType_NameIgnoreCase(String attributeTypeName);
 }

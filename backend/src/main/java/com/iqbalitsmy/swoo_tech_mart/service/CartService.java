@@ -26,6 +26,7 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final ProductVariantImageRepository productVariantImageRepository;
     private final ProductImageRepository productImageRepository;
 
     //----reads-----
@@ -189,41 +190,59 @@ public class CartService {
     private CartResponse buildResponse(Cart cart) {
         List<CartItem> items = cartItemRepository.findByCart_IdOrderByAddedAtAsc(cart.getId());
 
-        List<Long> fallBackProductId = items.stream()
+        List<Long> variantIds = items.stream()
+                .map(item -> item.getProductVariant().getId())
+                .distinct()
+                .toList();
+        Map<Long, String> variantThumbnails = firstImageByVariantId(variantIds);
+
+
+        List<Long> fallbackProductIds = items.stream()
                 .map(CartItem::getProductVariant)
-                .filter(v -> v.getImageUrl() == null)
+                .filter(v -> variantThumbnails.get(v.getId()) == null)
                 .map(v -> v.getProduct().getId())
                 .distinct()
                 .toList();
+        Map<Long, String> fallbackThumbnails = firstImageByProductId(fallbackProductIds);
 
-        Map<Long, String> fallBackThumbnail = firstImageByProductId(fallBackProductId);
 
-        List<CartItemResponse> itemResponse = items.stream()
-                .map(
-                        item -> {
-                            ProductVariant variant = item.getProductVariant();
-                            List<VariantAttributeRef> attributes = variant.getAttributeValues().stream()
-                                    .map(VariantAttributeRef::fromEntity)
-                                    .toList();
+        List<CartItemResponse> itemResponses = items.stream()
+                .map(item -> {
+                    ProductVariant variant = item.getProductVariant();
+                    List<VariantAttributeRef> attributes = variant.getAttributeValues().stream()
+                            .map(VariantAttributeRef::fromEntity)
+                            .toList();
 
-                            String imageUrl = variant.getImageUrl() != null ? variant.getImageUrl() : fallBackThumbnail.get(variant.getId());
+                    String imageUrl = variantThumbnails.get(variant.getId());
+                    if (imageUrl == null) {
+                        imageUrl = fallbackThumbnails.get(variant.getProduct().getId());
+                    }
 
-                            return CartItemResponse.fromEntity(item, attributes, imageUrl);
-                        }
-                ).toList();
+                    return CartItemResponse.fromEntity(item, attributes, imageUrl);
+                })
+                .toList();
 
-        BigDecimal subtotal = itemResponse.stream()
+        BigDecimal subtotal = itemResponses.stream()
                 .map(CartItemResponse::lineTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new CartResponse(cart.getId(), itemResponse, subtotal);
+        return new CartResponse(cart.getId(), itemResponses, subtotal);
+    }
+
+    private Map<Long, String> firstImageByVariantId(List<Long> variantIds) {
+        if (variantIds.isEmpty()) return Map.of();
+
+        Map<Long, String> result = new LinkedHashMap<>();
+        for (var image : productVariantImageRepository.findByProductVariant_IdInOrderByProductVariant_IdAscSortOrderAsc(variantIds)) {
+            result.putIfAbsent(image.getProductVariant().getId(), image.getUrl());
+        }
+        return result;
     }
 
     private Map<Long, String> firstImageByProductId(List<Long> productIds) {
         if (productIds.isEmpty()) return Map.of();
 
         Map<Long, String> result = new LinkedHashMap<>();
-
         for (var image : productImageRepository.findByProduct_IdInOrderByProduct_IdAscSortOrderAsc(productIds)) {
             result.putIfAbsent(image.getProduct().getId(), image.getUrl());
         }

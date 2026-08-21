@@ -15,4 +15,9 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant,L
     boolean existsBySku(String sku);
 
     boolean existsByAttributeValues_Id(Long attributeValues_id);
+
+    // Counts how many product variants carry the given attribute value
+    int countByAttributeValues_Id(Long attributeValueId);
+
+    List<ProductVariant> findByProduct_IdInAndActiveTrue(List<Long> productIds);
 }

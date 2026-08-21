@@ -3,6 +3,7 @@ package com.iqbalitsmy.swoo_tech_mart.security.oauth2;
 import com.iqbalitsmy.swoo_tech_mart.entity.RefreshToken;
 import com.iqbalitsmy.swoo_tech_mart.repository.UserRepository;
 import com.iqbalitsmy.swoo_tech_mart.security.JwtTokenProvider;
+import com.iqbalitsmy.swoo_tech_mart.security.RefreshTokenCookieHelper;
 import com.iqbalitsmy.swoo_tech_mart.security.UserPrincipal;
 import com.iqbalitsmy.swoo_tech_mart.service.RefreshTokenService;
 import jakarta.servlet.ServletException;
@@ -25,6 +26,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService ;
 
+    private final RefreshTokenCookieHelper  refreshTokenCookieHelper;
+
     @Value("${app.oauth2.authorized-redirect-uris[0]}")
     private String authorizedRedirectUris;
 //    private List<String> authorizedRedirectUris;
@@ -38,9 +41,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getEmail());
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
+        refreshTokenCookieHelper.set(response, refreshToken.getToken());
+
         String targetUrl = UriComponentsBuilder.fromUriString(authorizedRedirectUris)
                 .queryParam("accessToken", accessToken)
-                .queryParam("refreshToken", refreshToken.getToken())
+//                .queryParam("refreshToken", refreshToken.getToken())
                 .build().toUriString();
 
         clearAuthenticationAttributes(request);

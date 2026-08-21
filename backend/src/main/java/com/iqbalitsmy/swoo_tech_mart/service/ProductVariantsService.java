@@ -152,7 +152,7 @@ public class ProductVariantsService {
 
     private ProductVariant findVariantOrThrow(Long id){
         return productVariantRepository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Product not found with id: " + id)
+                () -> new ResourceNotFoundException("Variant not found with id: " + id)
         );
     }
 

@@ -36,7 +36,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
 
     @Transactional
-    public UserResponse register(RegisterRequest request){
+    public AuthResult register(RegisterRequest request){
         if (userRepository.existsByEmail(request.email())){
             throw new EmailAlreadyExistsException("Email Already Exists");
         }
@@ -54,11 +54,12 @@ public class AuthService {
                 .roles(Set.of(userRole))
                 .build();
         User savedUser = userRepository.save(user);
-        return UserResponse.fromEntity(savedUser);
+//        return UserResponse.fromEntity(savedUser);
+        return buildAuthResponse(savedUser);
     }
 
     @Transactional
-    public AuthResponse login(LoginRequest request){
+    public AuthResult login(LoginRequest request){
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
@@ -71,7 +72,7 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthResponse refreshToken(String request){
+    public AuthResult refreshToken(String request){
         RefreshToken refreshToken = refreshTokenService.findByToken(request);
         refreshTokenService.verifyExpiry(refreshToken);
 
@@ -80,12 +81,12 @@ public class AuthService {
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
         String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getEmail());
 
-        return new AuthResponse(
+        AuthResponse response = new AuthResponse(
                 accessToken,
-                newRefreshToken.getToken(),
                 tokenProvider.getAccessTokenExpirationMs(),
-                 UserResponse.fromEntity(user)
+                UserResponse.fromEntity(user)
         );
+        return new AuthResult(response, newRefreshToken.getToken());
     }
 
     @Transactional
@@ -95,15 +96,16 @@ public class AuthService {
         refreshTokenService.deleteByUser(refreshToken.getUser());
     }
 
-    private AuthResponse buildAuthResponse(User user) {
+    private AuthResult buildAuthResponse(User user) {
         String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getEmail());
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
-        return new AuthResponse(
+        AuthResponse response = new AuthResponse(
                 accessToken,
-                refreshToken.getToken(),
                 tokenProvider.getAccessTokenExpirationMs(),
                 UserResponse.fromEntity(user)
         );
+
+        return new AuthResult(response, refreshToken.getToken());
     }
 }

@@ -6,6 +6,7 @@ import com.iqbalitsmy.swoo_tech_mart.entity.Brand;
 import com.iqbalitsmy.swoo_tech_mart.exception.BadRequestException;
 import com.iqbalitsmy.swoo_tech_mart.exception.ResourceNotFoundException;
 import com.iqbalitsmy.swoo_tech_mart.repository.BrandRepository;
+import com.iqbalitsmy.swoo_tech_mart.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,20 +18,22 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BrandService {
     private final BrandRepository brandRepository;
+    private final ProductRepository productRepository;
 
     // public reads
     @Transactional(readOnly = true)
     public List<BrandResponse> list(String search) {
         List<Brand> brand = StringUtils.hasText(search) ? brandRepository.findByNameContainingIgnoreCaseOrderByNameAsc(search) : brandRepository.findAll();
 
-        return brand.stream().map(BrandResponse::fromEntity).toList();
+        return brand.stream().map(b -> BrandResponse.fromEntity(b, productRepository.countByBrand_Id(b.getId()))).toList();
     }
 
     @Transactional(readOnly = true)
     public BrandResponse getBySlug(String slug) {
-        return BrandResponse.fromEntity(brandRepository.findBySlugIgnoreCase(slug).orElseThrow(
+        Brand brand =  brandRepository.findBySlugIgnoreCase(slug).orElseThrow(
                 () -> new ResourceNotFoundException("Brand not found: "+slug)
-        ));
+        );
+        return BrandResponse.fromEntity(brand, productRepository.countByBrand_Id(brand.getId()));
     }
 
     // ---- Admin writes ----
@@ -42,7 +45,7 @@ public class BrandService {
 
         Brand brand = Brand.builder().slug(request.slug()).name(request.name()).logoUrl(request.logoUrl()).build();
 
-        return BrandResponse.fromEntity(brandRepository.save(brand));
+        return BrandResponse.fromEntity(brandRepository.save(brand), 0);
     }
 
     @Transactional
@@ -55,8 +58,9 @@ public class BrandService {
         brand.setName(request.name());
         brand.setSlug(request.slug());
         brand.setLogoUrl(request.logoUrl());
+        Brand savedBrand = brandRepository.save(brand);
 
-        return BrandResponse.fromEntity(brandRepository.save(brand));
+        return BrandResponse.fromEntity(savedBrand, productRepository.countByBrand_Id(savedBrand.getId()));
     }
 
 //    we detach them (brand -> null) in the same transaction right before removing the row.

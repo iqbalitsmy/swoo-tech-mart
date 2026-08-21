@@ -11,15 +11,17 @@ import com.iqbalitsmy.swoo_tech_mart.service.CartService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
+@Slf4j
 public class CartController {
 
-    private static final String SESSION_COOKIE = "SessionId";
+    private static final String SESSION_COOKIE = "sessionId";
     private static final String SESSION_HEADER = "X-Guest-Session-Id";
 
     private final CartService cartService;
@@ -31,6 +33,7 @@ public class CartController {
             @RequestHeader(name = SESSION_HEADER, required = false) String sessionHeader,
             HttpServletResponse response
             ){
+
         CartResult result = cartService.getCart(userId(userPrincipal), resolvedIncoming(sessionHeader, sessionCookie));
 
         persistSession(response, userPrincipal, result.sessionId());
@@ -98,10 +101,12 @@ public class CartController {
     @PostMapping("/merge")
     public ApiResponse<CartResponse> mergeCart(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Valid @RequestBody CartMergeRequest request
+            @CookieValue(value = "SessionId", required = false) String sessionCookie,
+            @RequestHeader(value = "X-Guest-Session-Id", required = false) String sessionHeader
             ){
-        CartResponse merged = cartService.mergeGuestCart(userPrincipal.getId(), request.guestSessionId());
-
+        String guestSessionId =
+                sessionCookie != null ? sessionCookie : sessionHeader;
+        CartResponse merged = cartService.mergeGuestCart(userPrincipal.getId(), guestSessionId);
         return ApiResponse.success("Cart merged", merged);
     }
 

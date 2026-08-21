@@ -38,6 +38,10 @@ public class Product {
     @JoinColumn(name = "brand_id")
     private Brand brand;
 
+    @Column(name = "sales_count", nullable = false)
+    @Builder.Default
+    private long salesCount = 0L;
+
     @Column(precision = 12, scale = 2)
     private BigDecimal maxPrice;
 

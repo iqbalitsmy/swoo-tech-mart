@@ -7,10 +7,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WishlistItemRepository extends JpaRepository<WishlistItem, Long> {
+
     List<WishlistItem> findByWishlist_IdOrderByAddedAtDesc(Long wishlistId);
 
-    Optional<WishlistItem> findByWishlist_IdAndProductVariant_Id(Long wishlistId, Long productVariantId);
-    boolean existsByWishlist_IdAndProductVariant_Id(Long wishlistId, Long productVariantId);
+    Optional<WishlistItem> findByWishlist_IdAndProduct_Id(Long wishlistId, Long productId);
+
+    boolean existsByWishlist_IdAndProduct_Id(Long wishlistId, Long productId);
+
+    boolean existsByWishlist_User_IdAndProduct_Id(Long userId, Long productId);
 
     void deleteByWishlist_Id(Long wishlistId);
 }

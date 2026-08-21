@@ -8,8 +8,7 @@ import java.time.Instant;
 public record ReviewResponse(
         Long id,
         Long productId,
-        Long userId,
-        String userName,
+        ReviewerRef reviewer,
         Integer rating,
         String body,
         Instant createdAt,
@@ -19,8 +18,7 @@ public record ReviewResponse(
         return  new ReviewResponse(
           review.getId(),
           review.getProduct().getId(),
-          review.getUser().getId(),
-          review.getUser().getFullName(),
+          ReviewerRef.fromUser(review.getUser()),
           review.getRating(),
           review.getBody(),
           review.getCreatedAt(),

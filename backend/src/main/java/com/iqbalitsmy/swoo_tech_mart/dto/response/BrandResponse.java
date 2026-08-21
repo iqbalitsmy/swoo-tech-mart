@@ -6,9 +6,10 @@ public record BrandResponse(
         Long id,
         String name,
         String slug,
-        String logoUrl
+        String logoUrl,
+        int totalProducts
 ) {
-    public static BrandResponse fromEntity(Brand brand) {
-        return new BrandResponse(brand.getId(), brand.getName(), brand.getSlug(), brand.getLogoUrl());
+    public static BrandResponse fromEntity(Brand brand, int totalProducts) {
+        return new BrandResponse(brand.getId(), brand.getName(), brand.getSlug(), brand.getLogoUrl(), totalProducts);
     }
 }
