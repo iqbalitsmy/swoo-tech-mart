@@ -13,9 +13,11 @@ public record ProductSummaryResponse(
         BigDecimal minPrice,
         BigDecimal maxPrice,
         StockStatus stockStatus,
-        boolean isNew
+        boolean isNew,
+        boolean singleVariant,
+        Long defaultVariantId
 ) {
-    public static ProductSummaryResponse fromEntity(Product product, String imageUrl){
+    public static ProductSummaryResponse fromEntity(Product product, String imageUrl, boolean singleVariant, Long defaultVariantId) {
         return new ProductSummaryResponse(
           product.getId(),
           product.getTitle(),
@@ -24,7 +26,9 @@ public record ProductSummaryResponse(
           product.getMinPrice(),
           product.getMaxPrice(),
           product.getStockStatus(),
-                product.isNew()
+                product.isNew(),
+                singleVariant,
+                defaultVariantId
         );
     }
 }

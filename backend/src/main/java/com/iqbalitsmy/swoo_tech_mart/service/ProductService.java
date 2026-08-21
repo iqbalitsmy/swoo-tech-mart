@@ -1,9 +1,7 @@
 package com.iqbalitsmy.swoo_tech_mart.service;
 
 import com.iqbalitsmy.swoo_tech_mart.dto.response.*;
-import com.iqbalitsmy.swoo_tech_mart.entity.Product;
-import com.iqbalitsmy.swoo_tech_mart.entity.ProductDescriptionSection;
-import com.iqbalitsmy.swoo_tech_mart.entity.ProductImage;
+import com.iqbalitsmy.swoo_tech_mart.entity.*;
 import com.iqbalitsmy.swoo_tech_mart.entity.enums.StockStatus;
 import com.iqbalitsmy.swoo_tech_mart.exception.ResourceNotFoundException;
 import com.iqbalitsmy.swoo_tech_mart.repository.*;
@@ -28,20 +26,25 @@ public class ProductService {
     private final ProductImageRepository productImageRepository;
     private final ProductHighlightRepository productHighlightRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final ProductVariantImageRepository productVariantImageRepository;
     private final ProductDescriptionSectionRepository productDescriptionSectionRepository;
     private final ProductDescriptionImageRepository productDescriptionImageRepository;
+    private final ProductVariantFactsResolver productVariantFactsResolver;
+
+    private final CategoryService categoryService;
 
     // Builds a dynamic Specification from all filter params, paginates, and attaches each product's thumbnail.
     @Transactional(readOnly = true)
     public PageResponse<ProductSummaryResponse> search(
-            Long categoryId, Long brandId, String tag,
+            String categorySlug, String brandSlug, String tag,
             BigDecimal minPrice, BigDecimal maxPrice,
             StockStatus stockStatus, Boolean isNew,
             String sort, int page, int size, String q
     ) {
+
         Specification<Product> spec = Specification
-                .where(ProductSpecifications.categoryId(categoryId))
-                .and(ProductSpecifications.brandId(brandId))
+                .where(ProductSpecifications.categorySlug(categorySlug, categoryService))
+                .and(ProductSpecifications.brandSlug(brandSlug))
                 .and(ProductSpecifications.tagLabel(tag))
                 .and(ProductSpecifications.minPriceAtLeast(minPrice))
                 .and(ProductSpecifications.maxPriceAtMost(maxPrice))
@@ -51,13 +54,13 @@ public class ProductService {
 
         Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size), resolveSort(sort));
         Page<Product> result = productRepository.findAll(spec, pageable);
+        List<Long> productIds = result.getContent().stream().map(Product::getId).toList();
 
-        Map<Long, String> thumbnails = firstImageByProductId(
-                result.getContent().stream().map(Product::getId).toList()
-        );
+        Map<Long, String> thumbnails = firstImageByProductId(productIds);
+        Map<Long, ProductVariantFactsResolver.VariantFacts> variantFacts = productVariantFactsResolver.resolve(productIds);
 
-        Page<ProductSummaryResponse> mapped = result.map(p ->
-                ProductSummaryResponse.fromEntity(p, thumbnails.get(p.getId())));
+
+        Page<ProductSummaryResponse> mapped = result.map(p -> toSummary(p, thumbnails, variantFacts));
 
         return PageResponse.from(mapped);
     }
@@ -84,10 +87,13 @@ public class ProductService {
         List<Product> related = productRepository.findByCategory_IdAndIdNot(
                 product.getCategory().getId(), productId, pageable);
 
-        Map<Long, String> thumbnails = firstImageByProductId(related.stream().map(Product::getId).toList());
+        List<Long> productIds = related.stream().map(Product::getId).toList();
+
+        Map<Long, String> thumbnails = firstImageByProductId(productIds);
+        Map<Long, ProductVariantFactsResolver.VariantFacts> variantFacts = productVariantFactsResolver.resolve(productIds);
 
         return related.stream()
-                .map(p -> ProductSummaryResponse.fromEntity(p, thumbnails.get(p.getId())))
+                .map(p -> toSummary(p, thumbnails, variantFacts))
                 .toList();
     }
 
@@ -117,7 +123,7 @@ public class ProductService {
     // ---- shared helpers (also used by ProductAdminService) ----
     // Assembles a full ProductDetailResponse by pulling and mapping a product's images, highlights, and variants.
     ProductDetailResponse toDetailResponse(Product product) {
-        List<ProductImageResponse> images = productImageRepository
+        List<ProductImageResponse> productImages = productImageRepository
                 .findByProduct_IdOrderBySortOrderAsc(product.getId()).stream()
                 .map(ProductImageResponse::fromEntity)
                 .toList();
@@ -127,12 +133,55 @@ public class ProductService {
                 .map(ProductHighlightResponse::fromEntity)
                 .toList();
 
-        List<ProductVariantSummaryResponse> variants = productVariantRepository
-                .findByProduct_Id(product.getId()).stream()
-                .map(ProductVariantSummaryResponse::fromEntity)
+        // Fetch all variants for the product
+        List<ProductVariant> productVariants = productVariantRepository.findByProduct_Id(product.getId());
+
+        // Convert each variant into the response object
+        List<ProductVariantSummaryResponse> variants = productVariants.stream()
+                .map(variant -> {
+
+                    // Fetch all images for this variant and convert them to DTOs
+                    List<ProductVariantImageResponse> images = productVariantImageRepository
+                            .findByProductVariant_IdOrderBySortOrderAsc(variant.getId())
+                            .stream()
+                            .map(ProductVariantImageResponse::fromEntity)
+                            .toList();
+
+                    // Convert the variant's attribute values to DTOs
+                    List<ProductAttributeResponse> attributes = variant.getAttributeValues()
+                            .stream()
+                            .map(ProductAttributeResponse::fromEntity)
+                            .toList();
+
+                    // Build the final variant response
+                    return ProductVariantSummaryResponse.fromEntity(
+                            variant,
+                            images,
+                            attributes
+                    );
+                })
                 .toList();
 
-        return ProductDetailResponse.fromEntity(product, images, highlights, variants);
+        List<ProductDescriptionSectionResponse> descriptionSection = productDescriptionSectionRepository.findByProduct_IdOrderBySortOrderAsc(
+                product.getId()).stream()
+                .map(
+                        p -> ProductDescriptionSectionResponse.fromEntity(
+                                    p,
+                                    productDescriptionImageRepository.findByProductDescriptionSection_IdOrderBySortOrderAsc(p.getId()).stream()
+                                            .map(ProductDescriptionImageResponse::fromEntity).toList()
+                                )
+                ).toList();
+
+
+        return ProductDetailResponse.fromEntity(product, productImages, highlights, variants, descriptionSection);
+    }
+
+    private ProductSummaryResponse toSummary(Product product, Map<Long, String> thumbnails, Map<Long, ProductVariantFactsResolver.VariantFacts> variantFacts) {
+        var facts = ProductVariantFactsResolver.factsFor(variantFacts, product.getId());
+
+        return  ProductSummaryResponse.fromEntity(
+                product, thumbnails.get(product.getId()), facts.singleVariant(), facts.defaultVariantId()
+        );
     }
 
     // Batch-fetches each product's first (sort-order-lowest) image URL, avoiding an N+1 query for list views.
@@ -155,6 +204,7 @@ public class ProductService {
             case "price_asc" -> Sort.by(Sort.Direction.ASC, "minPrice");
             case "price_desc" -> Sort.by(Sort.Direction.DESC, "maxPrice");
             case "title_asc" -> Sort.by(Sort.Direction.ASC, "title");
+            case "bestselling" -> Sort.by(Sort.Direction.DESC, "salesCount");
             case "newest" -> Sort.by(Sort.Direction.DESC, "createdAt");
             default -> Sort.by(Sort.Direction.DESC, "createdAt");
         };

@@ -1,6 +1,6 @@
 package com.iqbalitsmy.swoo_tech_mart.service;
 
-import com.iqbalitsmy.swoo_tech_mart.dto.response.VariantAttributeRef;
+import com.iqbalitsmy.swoo_tech_mart.dto.response.ProductSummaryResponse;
 import com.iqbalitsmy.swoo_tech_mart.dto.response.WishlistItemResponse;
 import com.iqbalitsmy.swoo_tech_mart.dto.response.WishlistResponse;
 import com.iqbalitsmy.swoo_tech_mart.entity.*;
@@ -22,99 +22,108 @@ public class WishlistService {
     private final WishlistRepository wishlistRepository;
     private final WishlistItemRepository wishlistItemRepository;
     private final UserRepository userRepository;
-    private final ProductVariantRepository  productVariantRepository;
-    private final ProductImageRepository  productImageRepository;
+    private final ProductRepository productRepository; // was ProductVariantRepository
+    private final ProductImageRepository productImageRepository;
 
+    private final ProductVariantFactsResolver  productVariantFactsResolver;
+
+    // NOTE: not readOnly — getOrCreateWishlist may INSERT a row on first
+    // visit, so this method needs a writable transaction. A read-only tx
+    // wrapping a lazy-create is a latent bug even if H2 doesn't enforce it.
     @Transactional
-    public WishlistResponse getWishlist(Long userId){
+    public WishlistResponse getWishlist(Long userId) {
         Wishlist wishlist = getOrCreateWishlist(userId);
 
         List<WishlistItem> items = wishlistItemRepository.findByWishlist_IdOrderByAddedAtDesc(wishlist.getId());
 
-        List<Long> productIdNeedToFallback = items.stream()
-                .map(WishlistItem::getProductVariant)
-                .filter(v -> v.getImageUrl() == null)
-                .map(v -> v.getProduct().getId())
+        // No variant/fallback two-step needed anymore — a wishlist item IS a
+        // product now, so this is just the product's own first gallery image.
+        List<Long> productIds = items.stream()
+                .map(item -> item.getProduct().getId())
                 .distinct()
                 .toList();
-        Map<Long, String> productFallbackThumbnails = firstImageByProductId(productIdNeedToFallback);
+        Map<Long, String> thumbnails = firstImageByProductId(productIds);
+        Map<Long, ProductVariantFactsResolver.VariantFacts> variantFacts = productVariantFactsResolver.resolve(productIds);
 
-        List<WishlistItemResponse> itemsResponses = items.stream()
-                .map(item -> toResponse(item, productFallbackThumbnails))
+        List<WishlistItemResponse> itemResponses = items.stream()
+                .map(item -> toResponse(item, thumbnails, variantFacts))
                 .toList();
 
-        return new WishlistResponse(wishlist.getId(), itemsResponses);
+        return new WishlistResponse(wishlist.getId(), itemResponses);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isInWishlist(Long userId, Long productId) {
+        return wishlistItemRepository.existsByWishlist_User_IdAndProduct_Id(userId, productId);
     }
 
     @Transactional
-    public WishlistItemResponse addItem(Long userId, Long productVariantId){
+    public WishlistItemResponse addItem(Long userId, Long productId) {
         Wishlist wishlist = getOrCreateWishlist(userId);
 
-        ProductVariant variant = productVariantRepository.findById(productVariantId).orElseThrow(() -> new ResourceNotFoundException("product variant not found"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
-        if (wishlistItemRepository.existsByWishlist_IdAndProductVariant_Id(wishlist.getId(), productVariantId)) {
-            throw new ConflictException("product variant not found");
+        if (wishlistItemRepository.existsByWishlist_IdAndProduct_Id(wishlist.getId(), productId)) {
+            throw new ConflictException("This product is already in your wishlist");
         }
 
         WishlistItem wishlistItem = WishlistItem.builder()
                 .wishlist(wishlist)
-                .productVariant(variant)
+                .product(product)
                 .build();
 
+        // Use the saved reference, not the pre-save one — with IDENTITY
+        // generation Spring Data mutates the same instance in place so this
+        // happens to work either way, but don't rely on that.
         WishlistItem savedItem = wishlistItemRepository.save(wishlistItem);
+        Map<Long, ProductVariantFactsResolver.VariantFacts> variantFacts = productVariantFactsResolver.resolve(List.of(productId));
 
-        Map<Long, String> fallback = variant.getImageUrl() == null ? firstImageByProductId(List.of(variant.getProduct().getId()))
-                : Map.of();
-
-        return toResponse(wishlistItem, fallback);
+        return toResponse(savedItem, firstImageByProductId(List.of(productId)) , variantFacts);
     }
 
+    /** Idempotent — the heart-icon toggle-off action, so removing something already gone is a no-op, not an error. */
     @Transactional
-    public void removeItem(Long userId, Long productVariantId){
+    public void removeItem(Long userId, Long productId) {
         Wishlist wishlist = getOrCreateWishlist(userId);
 
-        wishlistItemRepository.findByWishlist_IdAndProductVariant_Id(wishlist.getId(), productVariantId)
+        wishlistItemRepository.findByWishlist_IdAndProduct_Id(wishlist.getId(), productId)
                 .ifPresent(wishlistItemRepository::delete);
     }
 
     @Transactional
-    public void clearWishlist(Long userId){
+    public void clearWishlist(Long userId) {
         Wishlist wishlist = getOrCreateWishlist(userId);
 
         wishlistItemRepository.deleteByWishlist_Id(wishlist.getId());
     }
 
+    // ------ helpers ------
 
-    //------helpers------
+    private WishlistItemResponse toResponse(WishlistItem item,  Map<Long, String> thumbnails, Map<Long, ProductVariantFactsResolver.VariantFacts> variantFacts) {
+        Product product = item.getProduct();
+        var facts = ProductVariantFactsResolver.factsFor(variantFacts, product.getId());
 
-    private WishlistItemResponse toResponse(WishlistItem item, Map<Long, String> productFallbackThumbnails) {
-        ProductVariant variant = item.getProductVariant();
+        ProductSummaryResponse summary = ProductSummaryResponse.fromEntity(product, thumbnails.get(product.getId()), facts.singleVariant(), facts.defaultVariantId());
 
-        List<VariantAttributeRef> attributes = variant.getAttributeValues().stream()
-                .map(VariantAttributeRef::fromEntity)
-                .toList();
-
-        String imageUrl = variant.getImageUrl() != null ? variant.getImageUrl() : productFallbackThumbnails.get(variant.getProduct().getId());
-
-        return WishlistItemResponse.fromEntity(item, attributes, imageUrl);
+        return WishlistItemResponse.fromEntity(item, summary);
     }
 
-    private Wishlist getOrCreateWishlist(Long userId){
-        return wishlistRepository.findByUser_Id(userId).orElseGet( () -> {
+    private Wishlist getOrCreateWishlist(Long userId) {
+        return wishlistRepository.findByUser_Id(userId).orElseGet(() -> {
                     User user = userRepository.getReferenceById(userId);
                     return wishlistRepository.save(Wishlist.builder().user(user).build());
                 }
         );
     }
 
-    /** Fallback thumbnail for variants that don't carry their own imageUrl — first product gallery image. */
-    private Map<Long, String> firstImageByProductId(List<Long> productId){
-        if (productId.isEmpty()) return Map.of();
+    private Map<Long, String> firstImageByProductId(List<Long> productIds) {
+        if (productIds.isEmpty()) return Map.of();
 
-        Map<Long, String> result = new HashMap<Long, String>();
-        var images = productImageRepository.findByProduct_IdInOrderByProduct_IdAscSortOrderAsc(productId);
+        Map<Long, String> result = new HashMap<>();
+        var images = productImageRepository.findByProduct_IdInOrderByProduct_IdAscSortOrderAsc(productIds);
 
-        for (var image : images){
+        for (var image : images) {
             result.putIfAbsent(image.getProduct().getId(), image.getUrl());
         }
 
