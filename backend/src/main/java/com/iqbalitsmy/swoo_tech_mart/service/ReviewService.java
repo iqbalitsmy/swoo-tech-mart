@@ -3,11 +3,14 @@ package com.iqbalitsmy.swoo_tech_mart.service;
 import com.iqbalitsmy.swoo_tech_mart.dto.request.ReviewRequest;
 import com.iqbalitsmy.swoo_tech_mart.dto.response.PageResponse;
 import com.iqbalitsmy.swoo_tech_mart.dto.response.ProductReviewResponse;
+import com.iqbalitsmy.swoo_tech_mart.dto.response.ReviewEligibilityResponse;
 import com.iqbalitsmy.swoo_tech_mart.dto.response.ReviewResponse;
 import com.iqbalitsmy.swoo_tech_mart.entity.Product;
 import com.iqbalitsmy.swoo_tech_mart.entity.Review;
 import com.iqbalitsmy.swoo_tech_mart.entity.User;
 import com.iqbalitsmy.swoo_tech_mart.entity.enums.OrderStatus;
+import com.iqbalitsmy.swoo_tech_mart.entity.enums.ReviewEligibilityReason;
+import com.iqbalitsmy.swoo_tech_mart.exception.BadRequestException;
 import com.iqbalitsmy.swoo_tech_mart.exception.ResourceNotFoundException;
 import com.iqbalitsmy.swoo_tech_mart.repository.OrderItemRepository;
 import com.iqbalitsmy.swoo_tech_mart.repository.ProductRepository;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
 
 
 @Service
@@ -34,21 +38,58 @@ public class ReviewService {
     private final OrderItemRepository orderItemRepository;
 
     @Transactional(readOnly = true)
-    public ProductReviewResponse listForProduct(Long productId,  int page, int pageSize, String sort){
+    public ProductReviewResponse listForProduct(Long productId,  int page, int pageSize, String sort, Long viewerUserId) {
         if (!productRepository.existsById(productId)){
             throw  new ResourceNotFoundException("Product not found with id: " + productId);
         }
 
         Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(pageSize), resolvedSort(sort));
 
-        var result = reviewRepository.findByProduct_Id(productId, pageable).map(ReviewResponse::fromEntity);
+        var pageResult = viewerUserId != null
+                ? reviewRepository.findByProduct_IdAndUser_IdNot(productId, viewerUserId, pageable)
+                : reviewRepository.findByProduct_Id(productId, pageable);
+
+        var mapped = pageResult.map(ReviewResponse::fromEntity);
 
         double average = reviewRepository.averageRatingForProduct(productId);
         long total = reviewRepository.countByProduct_Id(productId);
 
-        return new ProductReviewResponse(PageResponse.from(result),rounded(average),total);
+        ReviewResponse myReview = viewerUserId != null
+                ? reviewRepository.findByProduct_IdAndUser_Id(productId, viewerUserId)
+                .map(ReviewResponse::fromEntity).orElse(null)
+                : null;
+
+        return new ProductReviewResponse(PageResponse.from(mapped),rounded(average),total, myReview);
     }
 
+    @Transactional(readOnly = true)
+    public ReviewEligibilityResponse checkEligibility(Long productId, Long userId) {
+
+        if (userId == null) {
+            return new ReviewEligibilityResponse(false, false, null, ReviewEligibilityReason.NOT_AUTHENTICATED);
+        }
+
+        Optional<Review> existingReview = reviewRepository.findByProduct_IdAndUser_Id(productId, userId);
+        if (existingReview.isPresent()) {
+            return new ReviewEligibilityResponse(false, true, existingReview.get().getId(), ReviewEligibilityReason.ALREADY_REVIEWED);
+        }
+
+        boolean hasPurchased = orderItemRepository
+                .existsByOrder_UserIdAndProductVariant_Product_Id(userId, productId);
+
+        if (!hasPurchased) {
+            return new ReviewEligibilityResponse(false, false, null, ReviewEligibilityReason.NOT_PURCHASED);
+        }
+
+        boolean hasDelivered = orderItemRepository
+                .existsByProductVariant_Product_IdAndOrder_UserIdAndOrder_Status(productId, userId, OrderStatus.DELIVERED);
+
+        if (!hasDelivered) {
+            return new ReviewEligibilityResponse(false, false, null, ReviewEligibilityReason.NOT_DELIVERED);
+        }
+
+        return new ReviewEligibilityResponse(true, false, null, ReviewEligibilityReason.ELIGIBLE);
+    }
 
     /**
      * Enforces "must have purchased" per the spec: the user needs at least
@@ -59,13 +100,14 @@ public class ReviewService {
 
     @Transactional
     public ReviewResponse create(Long userId, Long productId, ReviewRequest request){
-        Product  product = productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("Product not found with id: " + productId));
+        Product  product = productRepository.findById(productId)
+                .orElseThrow(()-> new ResourceNotFoundException("Product not found with id: " + productId));
 
-        boolean purchased = orderItemRepository.existsByProductVariant_Product_IdAndOrder_UserIdAndOrder_StatusNot(productId, userId, OrderStatus.CANCELED);
+        boolean delivered = orderItemRepository.existsByProductVariant_Product_IdAndOrder_UserIdAndOrder_Status(productId, userId, OrderStatus.DELIVERED);
 
-//        if (!purchased){
-//            throw  new BadRequestException("You can only review this product you have purchased");
-//        }
+        if (!delivered){
+            throw  new BadRequestException("You can only review a product after your order for it has been delivered");
+        }
 
         if (reviewRepository.existsByProduct_IdAndUser_Id(productId, userId)){
             throw new  ResourceNotFoundException("You've already reviewed this product--- edit your existing review instead" + productId);
@@ -128,6 +170,7 @@ public class ReviewService {
             default -> Sort.by(Sort.Direction.DESC, "createdAt");
         };
     }
+
 
     private double rounded(double value){
         return Math.round(value * 10.0)/10.0;
