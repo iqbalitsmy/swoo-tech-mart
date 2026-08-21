@@ -37,11 +37,7 @@ public class OrderService {
 
     private final PaymentService paymentService;
 
-    @Value("${app.shipping.flat-fee}")
-    private BigDecimal flatShippingFee;
-
-    @Value("${app.shipping.free-shipping-threshold}")
-    private BigDecimal freeShippingThreshold;
+    private final ShippingFeeCalculator  shippingFeeCalculator;
 
 
     @Transactional
@@ -76,8 +72,7 @@ public class OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         //Calculate shipping fee.
-        BigDecimal shippingFee = subtotal.compareTo(freeShippingThreshold) >= 0 ? BigDecimal.ZERO : flatShippingFee;
-
+        BigDecimal shippingFee = shippingFeeCalculator.calculate(subtotal);
         //Calculate final payable amount.
         BigDecimal totalAmount = subtotal.add(shippingFee);
 
@@ -133,10 +128,13 @@ public class OrderService {
     @Transactional(readOnly = true)
     public PageResponse<OrderSummaryResponse> listForUser(Long userId, int page, int size, OrderStatus status){
         Specification<Order> spec = Specification
-                .where(OrderSpecifications.userId(userId))
-                .and(OrderSpecifications.status(status));
+                .where(OrderSpecifications.userId(userId));
 
-        Pageable pageable = PageRequest.of(Math.max(page, 0), clapSize(size), Sort.by(Sort.Direction.DESC, "createdAt"));
+        if (status != null){
+            spec = spec.and(OrderSpecifications.status(status));
+        }
+
+        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size), Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<Order> result = orderRepository.findAll(spec, pageable); 
 
@@ -214,7 +212,7 @@ public class OrderService {
         return candidate;
     }
 
-    private int clapSize(int size){
+    private int clampSize(int size){
         if (size <= 0 ) return 20;
 
         return Math.min(size, 100);
