@@ -42,18 +42,22 @@ public class AdminOrderService {
 
     @Transactional(readOnly = true)
     public PageResponse<OrderAdminSummaryResponse> listAll(int page, int size, OrderStatus status, Long userId) {
-        Specification<Order> spec = Specification
-                .where(OrderSpecifications.userId(userId))
-                .and(OrderSpecifications.status(status));
+//        Specification<Order> spec = Specification
+//                .where(OrderSpecifications.userId(userId))
+//                .and(OrderSpecifications.status(status));
+        Specification<Order> spec = Specification.allOf(
+                OrderSpecifications.userId(userId),
+                OrderSpecifications.status(status)
+        );
 
         Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size), Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Order> result = orderRepository.findAll(spec, pageable);
-        log.info("Total result: {}", result.getTotalElements());
+//        log.info("Total result: {}", result.getTotalElements());
 
 
         Map<Long, String> emailsByUserId = emailsFor(result.getContent().stream().map(Order::getUserId).distinct().toList());
 
-        log.info("Emails for userId: {}", emailsByUserId.size());
+//        log.info("Emails for userId: {}", emailsByUserId.size());
 
         return PageResponse.from(result.map(o -> OrderAdminSummaryResponse.fromEntity(o, emailsByUserId.get(o.getUserId()))));
     }

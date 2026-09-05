@@ -8,13 +8,17 @@ public class OrderSpecifications {
     private OrderSpecifications() {}
 
     static Specification<Order> userId(Long userId) {
-        if (userId == null) return null;
+        if (userId == null) {
+            return (root, query, cb) -> cb.conjunction();
+        }
 
-        return (root, query, cb) -> cb.equal(root.get("userId"), userId);
+        return (root, query, cb) -> cb.equal(root.get("user").get("id"), userId);
     }
 
     static Specification<Order> status(OrderStatus status) {
-        if (status == null) return null;
+        if (status == null) {
+            return (root, query, cb) -> cb.conjunction();
+        }
 
         return (root, query, cb) -> cb.equal(root.get("status"), status);
     }
