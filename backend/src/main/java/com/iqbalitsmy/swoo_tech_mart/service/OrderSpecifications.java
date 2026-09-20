@@ -12,7 +12,8 @@ public class OrderSpecifications {
             return (root, query, cb) -> cb.conjunction();
         }
 
-        return (root, query, cb) -> cb.equal(root.get("user").get("id"), userId);
+        return (root, query, cb) ->
+                cb.equal(root.get("userId"), userId);
     }
 
     static Specification<Order> status(OrderStatus status) {
