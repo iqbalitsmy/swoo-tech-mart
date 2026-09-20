@@ -58,8 +58,7 @@ public class PaymentService {
             // Nothing sensitive was persisted — re-fetch a fresh client secret
             // for the SAME PaymentIntent instead of creating a new one.
             var result = client.retrieve(reused.getProviderReference());
-            log.debug("Reusing existing PENDING payment {} for order {} — re-fetched client secret, no new PaymentIntent",
-                    reused.getId(), order.getId());
+//            log.debug("Reusing existing PENDING payment {} for order {} — re-fetched client secret, no new PaymentIntent", reused.getId(), order.getId());
             return PaymentInitiationResponse.of(reused, result.clientSecret(), result.redirectUrl());
         }
 
@@ -97,7 +96,6 @@ public class PaymentService {
     public void handleWebhook(PaymentProvider provider, String rawBody, String signatureHeader) {
         PaymentGatewayClient client = gatewayClientResolver.resolve(provider);
         var result = client.verifyAndParseWebhook(rawBody, signatureHeader);
-
         switch (result.status()){
             case INVALID_SIGNATURE -> throw new AccessDeniedException("Invalid webhook signature");
             case IGNORED -> {
@@ -117,7 +115,6 @@ public class PaymentService {
             payment.setFailureReason(null);
 
             Order order = payment.getOrder();
-
             if (order.getStatus() == OrderStatus.PENDING) {
                 order.setStatus(OrderStatus.CONFIRMED);
                 orderRepository.save(order);

@@ -61,6 +61,7 @@ public class PaymentController {
             @RequestHeader(name = GENERIC_SIGNATURE_HEADER, required = false) String genericSignature,
             HttpServletRequest request
     ) throws IOException {
+        log.info("Provider: {}",provider);
         PaymentProvider parsedProvider;
         try {
             parsedProvider = PaymentProvider.valueOf(provider.toUpperCase());
@@ -68,6 +69,7 @@ public class PaymentController {
             log.warn("webhook call for unknow provider path segment: {}", provider);
             return ResponseEntity.badRequest().build();
         }
+        log.info("Payment provider: {}",parsedProvider.name());
         String signature = parsedProvider == PaymentProvider.STRIPE ? stripeSignature : genericSignature;
         String rawBody = readRawBody(request);
 
