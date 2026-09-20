@@ -9,7 +9,7 @@ import youtubeIcon from "../../assets/icon/youtube.png"
 import pinterestIcon from "../../assets/icon/pinterest.png"
 import PromoCallout from "./PromoCallout";
 import VariantSelector from "./VariantSelector";
-import { useVariantMatrix } from "@/utiles/Usevariantmatrix";
+import { useVariantMatrix } from "@/utils/Usevariantmatrix";
 import WishlistButton from "./WishlistButton";
 import AddToCartButton from "./AddToCartButton";
 import { useNavigate } from "react-router-dom";

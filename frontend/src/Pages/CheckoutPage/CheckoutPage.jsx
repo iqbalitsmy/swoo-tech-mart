@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Check, Wallet, CreditCard, Landmark, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import CheckoutAddressSection from '@/Components/CheckoutPage/CheckoutAddressSection';
+import CheckoutAddressSection from '@/components/CheckoutPage/CheckoutAddressSection';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { useGetCart } from '@/hooks/useCart';
 

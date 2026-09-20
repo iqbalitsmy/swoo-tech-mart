@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import Breadcrumb from '../../Components/Shared/Breadcrumb/Breadcrumb';
-import ProductDetails from '../../Components/ProductDetailsPage/ProductDetails';
+import Breadcrumb from '../../components/Shared/Breadcrumb/Breadcrumb';
+import ProductDetails from '../../components/ProductDetailsPage/ProductDetails';
 
-import ProductCarousel from '../../Components/Shared/ProductCarousel/ProductCarousel';
-import RecentlyViewedSection from '../../Components/Shared/RecentlyView/RecentlyViewedSection';
+import ProductCarousel from '../../components/Shared/ProductCarousel/ProductCarousel';
+import RecentlyViewedSection from '../../components/Shared/RecentlyView/RecentlyViewedSection';
 import { useGetProduct, useGetRelatedProduct } from '@/hooks/useProduct';
 import { useParams } from 'react-router-dom';
 import { recordRecentlyViewRequest } from '@/api/recentlyViewApi';

@@ -1,5 +1,5 @@
 import React from "react";
-import timeAgo from "../../utiles/timeAgo";
+import timeAgo from "../../utils/timeAgo";
 import StarRating from "../Shared/StarRating/StarRating";
 import { useDeleteReview } from "@/hooks/useReviews";
 import { Edit, Trash2 } from "lucide-react";

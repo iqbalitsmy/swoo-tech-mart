@@ -1,9 +1,9 @@
 import React from 'react';
-import Breadcrumb from '../../Components/Shared/Breadcrumb/Breadcrumb';
-import Products from '../../Components/ProductsPage/Products';
-import AllCategories from '../../Components/ProductsPage/AllCategories/AllCategories';
+import Breadcrumb from '../../components/Shared/Breadcrumb/Breadcrumb';
+import Products from '../../components/ProductsPage/Products';
+import AllCategories from '../../components/ProductsPage/AllCategories/AllCategories';
 import { useSearchParams } from 'react-router-dom';
-import Pagination from '@/Components/Shared/Pagination/Pagination';
+import Pagination from '@/components/Shared/Pagination/Pagination';
 import { useGetProducts } from '@/hooks/useProduct';
 
 const items = [

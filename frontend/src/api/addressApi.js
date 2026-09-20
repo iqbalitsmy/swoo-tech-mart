@@ -1,7 +1,7 @@
 import axiosInstance from "./axios";
 
 
-const BASE = '/address';
+const BASE = '/addresses';
 
 export const addressGetAllRequest = async () => {
     const { data } = await axiosInstance.get(BASE);

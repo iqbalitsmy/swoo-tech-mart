@@ -1,4 +1,4 @@
-import Breadcrumb from '@/Components/Shared/Breadcrumb/Breadcrumb';
+import Breadcrumb from '@/components/Shared/Breadcrumb/Breadcrumb';
 import { useAuth } from '@/hooks/useAuth';
 import { ChevronRight, UserRound } from 'lucide-react';
 import React, { useState } from 'react';

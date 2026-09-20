@@ -3,8 +3,6 @@ import { addressCreateRequest, addressGetAllRequest, addressGetByIdRequest, addr
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 
-// Single source of truth for the query key — avoids the double-wrap /
-// mismatch bug (queryKey: [ADDRESS_KEYS.all] vs ADDRESS_KEYS.all).
 export const ADDRESS_KEYS = {
     all: ['addresses'],
     detail: (id) => ['addresses', id],

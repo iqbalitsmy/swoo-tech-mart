@@ -1,5 +1,5 @@
-import Breadcrumb from '@/Components/Shared/Breadcrumb/Breadcrumb';
-import { Checkbox } from '@/Components/ui/checkbox';
+import Breadcrumb from '@/components/Shared/Breadcrumb/Breadcrumb';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useClearCart, useGetCart, useRemoveCartItem, useUpdateCartItemQty } from '@/hooks/useCart';
 import { ChevronRight, Heart, Minus, Plus, Store, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';

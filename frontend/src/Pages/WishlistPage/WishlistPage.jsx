@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Trash2, ShoppingCart, Check, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Breadcrumb from '@/Components/Shared/Breadcrumb/Breadcrumb';
+import Breadcrumb from '@/components/Shared/Breadcrumb/Breadcrumb';
 import { useClearWishlist, useGetWishlist, useRemoveFromWishlist } from '@/hooks/useWishlist';
-import CustomCheckBox from '@/Components/Shared/CustomCheckBox/CustomCheckBox';
+import CustomCheckBox from '@/components/Shared/CustomCheckBox/CustomCheckBox';
 
 const breadcrumbItems = [
     { label: "Home", href: "/" },

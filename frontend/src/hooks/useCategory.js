@@ -11,6 +11,13 @@ export const useCategoryList = (categoryId) => {
     });
 };
 
+export function useCategories() {
+    return useQuery({
+        queryKey: ["categories", "admin"],
+        queryFn: () => getCategoryListRequest(),
+    });
+}
+
 export const useCategory = (categorySlug) => {
     return useQuery({
         queryKey: ['categories', categorySlug ?? 'slug'],

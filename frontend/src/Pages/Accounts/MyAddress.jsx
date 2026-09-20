@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Pencil, Trash2, MapPin } from 'lucide-react';
-import AddAddressDialog from '@/Components/CheckoutPage/AddAddressDialog';
+import AddAddressDialog from '@/components/CheckoutPage/AddAddressDialog';
 import {
     useAddresses,
     useAddAddress,
@@ -17,8 +17,6 @@ const formatAddressLine = (addr) => {
 
 const MyAddress = () => {
     const { data: addresses = [], isLoading, isError } = useAddresses();
-
-    console.log(addresses)
 
     const addAddress = useAddAddress();
     const updateAddress = useUpdateAddress();

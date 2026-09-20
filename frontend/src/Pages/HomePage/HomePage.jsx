@@ -1,9 +1,9 @@
 import React from 'react';
-import CategoryHero from '../../Components/HomePage/CategoryHero';
-import ProductsTabs from '../../Components/HomePage/ProductsTabs';
-import CategoryShowcaseGrid from '../../Components/HomePage/CategoryPanel/CategoryShowcaseGrid';
-import CategoryPromoSections from '../../Components/HomePage/CategoryPromo/CategoryPromoSections';
-import RecentlyViewedSection from '@/Components/Shared/RecentlyView/RecentlyViewedSection';
+import CategoryHero from '../../components/HomePage/CategoryHero';
+import ProductsTabs from '../../components/HomePage/ProductsTabs';
+import CategoryShowcaseGrid from '../../components/HomePage/CategoryPanel/CategoryShowcaseGrid';
+import CategoryPromoSections from '../../components/HomePage/CategoryPromo/CategoryPromoSections';
+import RecentlyViewedSection from '@/components/Shared/RecentlyView/RecentlyViewedSection';
 
 const HomePage = () => {
     return (

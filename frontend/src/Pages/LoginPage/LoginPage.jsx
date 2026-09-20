@@ -1,5 +1,5 @@
 import { oauthRedirectUrl } from '@/api/authApi';
-import Breadcrumb from '@/Components/Shared/Breadcrumb/Breadcrumb';
+import Breadcrumb from '@/components/Shared/Breadcrumb/Breadcrumb';
 import { useLogin } from '@/hooks/useLogin';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/validators/authValidators';

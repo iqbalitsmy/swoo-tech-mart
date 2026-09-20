@@ -1,8 +1,8 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import NavLink from '../Components/Shared/Main/NavLink';
-import Footer from '../Components/Shared/Footer/Footer';
-import ScrollToTop from '@/Components/Shared/ScrollToTop/ScrollToTop';
+import NavLink from '../components/Shared/Main/NavLink';
+import Footer from '../components/Shared/Footer/Footer';
+import ScrollToTop from '@/components/Shared/ScrollToTop/ScrollToTop';
 import { Toaster } from 'sonner';
 
 const Main = () => {

@@ -72,7 +72,7 @@ export default function ProductInfo({ product, selectedVariant }) {
         <p>
           <span className="font-bold text-gray-900">BRAND:</span>{" "}
           <Link to={`/products?brand=${product?.brand?.slug}`} className="text-primary hover:underline">
-            {product?.brand.name}
+            {product?.brand?.name || "No Brand"}
           </Link>
         </p>
       </div>

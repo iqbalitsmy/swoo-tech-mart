@@ -15,7 +15,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const PaymentResultPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const [status, setStatus] = useState('checking'); // checking | succeeded | processing | failed
+    const [status, setStatus] = useState('checking');
 
     const orderId = searchParams.get('orderId');
     const clientSecret = searchParams.get('payment_intent_client_secret');
@@ -31,6 +31,7 @@ const PaymentResultPage = () => {
 
             const stripe = await stripePromise;
             const { paymentIntent, error } = await stripe.retrievePaymentIntent(clientSecret);
+            console.log(error?.message)
             console.log(paymentIntent)
 
             if (cancelled) return;
@@ -40,7 +41,7 @@ const PaymentResultPage = () => {
                 return;
             }
             console.log("Result page")
-            console.log(paymentIntent.status)
+            console.log(status)
 
             if (paymentIntent.status === 'succeeded') setStatus('succeeded');
             else if (paymentIntent.status === 'processing') setStatus('processing');
@@ -68,10 +69,11 @@ const PaymentResultPage = () => {
             </div>
         );
     }
-
+    
     if (status === 'succeeded' || status === 'processing') {
         return <PaymentSuccess processing={status === 'processing'} />;
     }
+    console.log(status)
 
     return <PaymentFailed orderId={orderId} />;
 };

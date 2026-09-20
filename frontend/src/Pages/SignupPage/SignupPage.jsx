@@ -1,4 +1,4 @@
-import Breadcrumb from '@/Components/Shared/Breadcrumb/Breadcrumb';
+import Breadcrumb from '@/components/Shared/Breadcrumb/Breadcrumb';
 import { useRegister } from '@/hooks/useRegister';
 import { registerSchema } from '@/validators/authValidators';
 import { zodResolver } from '@hookform/resolvers/zod';

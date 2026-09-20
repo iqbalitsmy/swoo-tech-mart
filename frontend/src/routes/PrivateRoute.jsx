@@ -7,9 +7,11 @@ const PrivateRoute = () => {
     const location = useLocation();
 
     if (isAuthLoading) {
-        return (<div className="flex min-h-screen items-center justify-center">
-            <span className="text-sm text-gray-500">Loading...</span>
-        </div>)
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <span className="text-sm text-gray-500">Loading...</span>
+            </div>
+        )
     }
 
     if (!isAuthenticated) {

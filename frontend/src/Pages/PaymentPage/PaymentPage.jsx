@@ -3,8 +3,8 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useInitiatePayment } from '@/hooks/useOrders';
-import StripeProvider from '@/Components/CheckoutPage/StripeProvider';
-import StripePaymentForm from '@/Components/CheckoutPage/StripePaymentForm';
+import StripeProvider from '@/components/CheckoutPage/StripeProvider';
+import StripePaymentForm from '@/components/CheckoutPage/StripePaymentForm';
 
 const formatTaka = (n) => `৳ ${n.toLocaleString('en-US')}`;
 
@@ -14,10 +14,6 @@ const PaymentPage = () => {
     const navigate = useNavigate();
     const initiatePayment = useInitiatePayment();
 
-    // Fast path: CheckoutPage already called initiate on order creation and
-    // handed the clientSecret over via navigation state — skip the extra
-    // round trip. Slow path: state is missing (hard refresh, direct link,
-    // back-button) — re-initiate to get a fresh session for this order.
     const stateSession = location.state?.clientSecret
         ? { clientSecret: location.state.clientSecret, amount: location.state.amount }
         : null;
@@ -35,7 +31,7 @@ const PaymentPage = () => {
         : null);
 
     if (!session) {
-        if (initiatePayment.isError) {
+        if (initiatePayment?.isError) {
             return (
                 <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
                     <p className="text-sm text-gray-500">Could not start payment for this order.</p>
@@ -64,7 +60,7 @@ const PaymentPage = () => {
                     <StripePaymentForm
                         orderId={orderId}
                         amount={formatTaka(session.amount)}
-                        onCancel={() => navigate(`/orders/${orderId}`)}
+                        onCancel={() => navigate(`/account/order-details/${orderId}`)}
                     />
                 </StripeProvider>
             </div>
