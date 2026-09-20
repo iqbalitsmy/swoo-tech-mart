@@ -9,7 +9,7 @@ public record PageResponse<T>(
         List<T> content,
         int page,
         int size,
-        long totalElement,
+        long totalElements,
         int totalPages,
         boolean last
 ) {
@@ -25,3 +25,4 @@ public record PageResponse<T>(
         );
     }
 }
+

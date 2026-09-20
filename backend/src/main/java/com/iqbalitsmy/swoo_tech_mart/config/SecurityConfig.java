@@ -76,17 +76,17 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/webhook/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                        .requestMatchers(HttpMethod.GET,
                                 "/api/products/**", "/api/categories/**", "/api/brands/**", "/api/tags/**",
                                 "/api/variants/**", "/api/attribute-types/**"
                         ).permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/cart").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/cart/items").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/cart/items/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/cart/items/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/cart").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cart").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/cart/items").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/cart/items/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/cart/items/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/cart").permitAll()
                         .requestMatchers( "/api/recently-viewed/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/payments/webhook/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/payments/webhook/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

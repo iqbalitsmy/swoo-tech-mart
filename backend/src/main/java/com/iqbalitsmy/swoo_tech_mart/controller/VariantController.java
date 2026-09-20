@@ -39,14 +39,14 @@ public class VariantController {
         return ApiResponse.success(message);
     }
     // -------images--------
-    @PostMapping("/api/admin/variants/{variantsId}/images")
-    public ResponseEntity<ApiResponse<ProductVariantImageResponse>> addImage(@PathVariable Long variantsId, @Valid @RequestBody ProductVariantImageRequest request){
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Variant image added", productVariantsService.addImage(variantsId, request)));
+    @PostMapping("/api/admin/variants/{variantId}/images")
+    public ResponseEntity<ApiResponse<ProductVariantImageResponse>> addImage(@PathVariable Long variantId, @Valid @RequestBody ProductVariantImageRequest request){
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Variant image added", productVariantsService.addImage(variantId, request)));
     }
 
-    @DeleteMapping("/api/admin/variants/{variantsId}/images/{image}")
-    public ApiResponse<Void> deleteImage(@PathVariable Long variantsId, @PathVariable Long image){
-        productVariantsService.deleteImage(variantsId, image);
+    @DeleteMapping("/api/admin/variants/{variantId}/images/{image}")
+    public ApiResponse<Void> deleteImage(@PathVariable Long variantId, @PathVariable Long image){
+        productVariantsService.deleteImage(variantId, image);
         return ApiResponse.success("Image removed");
     }
 

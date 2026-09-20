@@ -40,7 +40,7 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
     open-in-view: false
     defer-datasource-initialization: true
 
@@ -117,3 +117,9 @@ app:
     # NEW — used by PaymentService when building each Payment row, and as
     # StripePaymentGatewayClient's fallback if Payment.currency is somehow null
     currency: usd
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
+  upload-folder: swoo-tech-mart/products

@@ -1,17 +1,14 @@
 package com.iqbalitsmy.swoo_tech_mart.controller;
 
 import com.iqbalitsmy.swoo_tech_mart.dto.request.LoginRequest;
-import com.iqbalitsmy.swoo_tech_mart.dto.request.RefreshTokenRequest;
 import com.iqbalitsmy.swoo_tech_mart.dto.request.RegisterRequest;
 import com.iqbalitsmy.swoo_tech_mart.dto.response.ApiResponse;
 import com.iqbalitsmy.swoo_tech_mart.dto.response.AuthResponse;
-import com.iqbalitsmy.swoo_tech_mart.dto.response.UserResponse;
 import com.iqbalitsmy.swoo_tech_mart.exception.TokenRefreshException;
 import com.iqbalitsmy.swoo_tech_mart.security.RefreshTokenCookieHelper;
 import com.iqbalitsmy.swoo_tech_mart.service.AuthResult;
 import com.iqbalitsmy.swoo_tech_mart.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
