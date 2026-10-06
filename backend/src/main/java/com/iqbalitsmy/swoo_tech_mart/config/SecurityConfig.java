@@ -75,6 +75,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/webjars/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/webhook/**").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/products/**", "/api/categories/**", "/api/brands/**", "/api/tags/**",
