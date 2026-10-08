@@ -46,6 +46,34 @@ public class AttributeService {
         return AttributeTypeResponse.fromEntity(attributeTypeRepository.save(attributeType));
     }
 
+    @Transactional
+    public AttributeTypeResponse updateType(Long id, AttributeTypeRequest request) {
+        AttributeType type = attributeTypeRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("AttributeType with id " + id + " doesn't exist"));
+
+        if (attributeTypeRepository.existsByNameIgnoreCaseAndIdNot(request.name(), id)) {
+            throw new BadRequestException("AttributeType with name " + request.name() + " already exists");
+        }
+
+        type.setName(request.name());
+        return AttributeTypeResponse.fromEntity(attributeTypeRepository.save(type));
+    }
+
+    @Transactional
+    public void deleteType(Long attributeTypeId) {
+        AttributeType type = attributeTypeRepository.findById(attributeTypeId).orElseThrow(
+                () -> new ResourceNotFoundException("AttributeType with id " + attributeTypeId + " doesn't exist"));
+
+        if (productVariantRepository.existsByAttributeValues_AttributeType_Id(attributeTypeId)) {
+            throw new BadRequestException("This type has values in use by product variants and can't be deleted");
+        }
+
+        // Unused values go with their type so no orphan rows are left behind
+        attributeValueRepository.deleteAll(
+                attributeValueRepository.findByAttributeType_IdOrderByLabelAsc(attributeTypeId));
+        attributeTypeRepository.delete(type);
+    }
+
     // ---- Attribute Values ----
 
     @Transactional(readOnly = true)
@@ -75,6 +103,21 @@ public class AttributeService {
                 .value(request.value())
                 .build();
 
+        return AttributeValueResponse.fromEntity(attributeValueRepository.save(value));
+    }
+
+    @Transactional
+    public AttributeValueResponse updateValue(Long attributeValueId, AttributeValueRequest request) {
+        AttributeValue value = attributeValueRepository.findById(attributeValueId).orElseThrow(
+                () -> new ResourceNotFoundException("AttributeValue with id " + attributeValueId + " doesn't exist"));
+
+        if (attributeValueRepository.existsByAttributeType_IdAndValueIgnoreCaseAndIdNot(
+                value.getAttributeType().getId(), request.value(), attributeValueId)) {
+            throw new BadRequestException("AttributeValue with value " + request.value() + " already exists");
+        }
+
+        value.setLabel(request.label());
+        value.setValue(request.value());
         return AttributeValueResponse.fromEntity(attributeValueRepository.save(value));
     }
 

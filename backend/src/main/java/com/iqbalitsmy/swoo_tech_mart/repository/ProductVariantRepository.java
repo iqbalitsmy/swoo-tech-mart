@@ -20,4 +20,6 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant,L
     int countByAttributeValues_Id(Long attributeValueId);
 
     List<ProductVariant> findByProduct_IdInAndActiveTrue(List<Long> productIds);
+
+    boolean existsByAttributeValues_AttributeType_Id(Long attributeTypeId);
 }

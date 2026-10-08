@@ -33,15 +33,34 @@ public class AttributeController {
     }
 
     //----admin-----
-
+    //----type-----
     @PostMapping("/api/admin/attribute-types")
     public ResponseEntity<ApiResponse<AttributeTypeResponse>> createType(@Valid @RequestBody AttributeTypeRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Attributes created", attributeService.createType(request)));
     }
 
+    @PutMapping("/api/admin/attribute-types/{id}")
+    public ApiResponse<AttributeTypeResponse> updateType(@PathVariable Long id,
+                                                         @Valid @RequestBody AttributeTypeRequest request) {
+        return ApiResponse.success("Attribute type updated", attributeService.updateType(id, request));
+    }
+
+    @DeleteMapping("/api/admin/attribute-types/{id}")
+    public ApiResponse<Void> deleteType(@PathVariable Long id) {
+        attributeService.deleteType(id);   // was deleteValue(id)
+        return ApiResponse.success("Attribute type deleted");
+    }
+
+    //----values----
     @PostMapping("/api/admin/attribute-types/{id}/values")
     public ResponseEntity<ApiResponse<AttributeValueResponse>> addValue(@PathVariable Long  id, @Valid @RequestBody AttributeValueRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Attributes values created", attributeService.addValue(id, request)));
+    }
+
+    @PutMapping("/api/admin/attribute-values/{id}")
+    public ApiResponse<AttributeValueResponse> updateValue(@PathVariable Long id,
+                                                           @Valid @RequestBody AttributeValueRequest request) {
+        return ApiResponse.success("Attribute value updated", attributeService.updateValue(id, request));
     }
 
     @DeleteMapping("/api/admin/attribute-values/{id}")

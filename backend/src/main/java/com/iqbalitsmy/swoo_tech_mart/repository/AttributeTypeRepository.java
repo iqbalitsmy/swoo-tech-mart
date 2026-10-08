@@ -13,4 +13,6 @@ public interface AttributeTypeRepository  extends JpaRepository<AttributeType, L
     Optional<AttributeType> findByNameIgnoreCase(String name);
 
     boolean existsByNameIgnoreCase(String name);
+
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 }
