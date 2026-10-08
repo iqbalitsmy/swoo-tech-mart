@@ -29,6 +29,12 @@ public class TagController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("tag created successfully", tagService.create(request)));
     }
 
+    @PutMapping("/api/admin/tags/{id}")
+    public ResponseEntity<ApiResponse<TagResponse>> update(@PathVariable Long id, @Valid @RequestBody TagRequest request){
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Tag is updated", tagService.update(id, request)));
+    }
+
+
     @DeleteMapping("/api/admin/tags/{id}")
     public ApiResponse<TagResponse> delete(@PathVariable Long id){
         tagService.delete(id);

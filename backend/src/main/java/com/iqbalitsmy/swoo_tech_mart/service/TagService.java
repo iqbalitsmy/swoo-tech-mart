@@ -33,6 +33,14 @@ public class TagService {
         return TagResponse.fromEntity(tagRepository.save(tag));
     }
 
+    @Transactional
+    public TagResponse update(Long id, TagRequest request){
+        Tag tag = tagRepository.findById(id).orElseThrow( () -> new ResourceNotFoundException("The tag is not exist"));
+        tag.setLabel(request.label());
+        tagRepository.save(tag);
+        return TagResponse.fromEntity(tag);
+    }
+
     /** Cascades product_tags rows for this tag before removing the tag itself, per the spec. */
     @Transactional
     public void delete(Long id){
