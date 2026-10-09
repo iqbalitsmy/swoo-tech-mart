@@ -1,6 +1,7 @@
+import { createAdminBrand } from "@/api/adminApi/brands";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createAdminBrand } from "@/api/adminApi";
+// import { createAdminBrand } from "@/api/adminApi";
 
 export function useCreateBrand() {
     const client = useQueryClient();

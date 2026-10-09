@@ -1,6 +1,7 @@
+import { updateAdminTag } from "@/api/adminApi/tags";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { updateAdminTag } from "@/api/adminApi";
+// import { updateAdminTag } from "@/api/adminApi";
 
 export function useUpdateTag() {
     const client = useQueryClient();

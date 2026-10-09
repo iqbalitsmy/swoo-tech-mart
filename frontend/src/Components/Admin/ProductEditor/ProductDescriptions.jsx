@@ -1,69 +1,132 @@
-import { descriptionImageSchema, descriptionSectionSchema } from "@/validators/productValidator";
-import SectionCard from "./ui/SectionCard";
-import AddForm from "./AddForm";
-import { useAddDescriptionSection } from "@/hooks/useAddDescriptionSection";
-import { useAddDescriptionImage } from "@/hooks/useAddDescriptionImage";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus } from "lucide-react";
+import { useForm } from "react-hook-form";
+
+import { descriptionSectionSchema } from "@/validators/productValidator";
+import DescriptionSection from "./DescriptionSection/DescriptionSection";
+import { useAddDescriptionSection } from "@/hooks/admin/useAddDescriptionSection";
+
 
 export default function ProductDescriptions({ product, reload }) {
-    const sectionMutation = useAddDescriptionSection(product.id, reload);
-    const imageMutation = useAddDescriptionImage(product.id, reload);
+  const sectionMutation = useAddDescriptionSection(product.id, reload);
 
-    return (
-        <SectionCard title="Description sections" description="Write clear, structured product details.">
-            <div className="space-y-3">
-                {product.descriptions?.map((item) => (
-                    <div key={item.id} className="rounded-md border border-gray-200 bg-gray-50 p-3">
-                        <p className="text-xs font-semibold text-gray-700">{item.title}</p>
-                        <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-600">{item.body}</p>
+  // Form for adding a NEW section (edit / image forms live in DescriptionSection)
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({ resolver: zodResolver(descriptionSectionSchema) });
 
-                        <div className="mt-2 flex gap-2 overflow-x-auto">
-                            {item.images?.map((image) => (
-                                <img
-                                    key={image.id}
-                                    src={image.url}
-                                    alt={image.altText || item.title}
-                                    className="h-16 w-16 shrink-0 rounded border border-gray-200 object-cover"
-                                />
-                            ))}
-                        </div>
+  // Clear the form after a successful add
+  const handleAddSuccess = () => reset();
 
-                        <div className="mt-3 border-t border-gray-100 pt-3">
-                            <AddForm
-                                schema={descriptionImageSchema}
-                                fields={[
-                                    { name: "url", label: "Inline image", image: true },
-                                    { name: "altText", label: "Alt text" },
-                                    { name: "sortOrder", label: "Order", type: "number" },
-                                ]}
-                                onSubmit={(data, reset) =>
-                                    imageMutation.mutate({ ...data, sectionId: item.id }, { onSuccess: reset })
-                                }
-                            />
-                        </div>
-                    </div>
-                ))}
+  // Runs only when the form passes validation
+  const onValid = (data) => {
+    sectionMutation.mutate(data, { onSuccess: handleAddSuccess });
+  };
 
-                {!product.descriptions?.length && (
-                    <p className="text-sm text-gray-400">No description sections yet.</p>
-                )}
-            </div>
+  const hasSections = product.descriptions?.length > 0;
 
-            <div className="mt-5 border-t border-gray-100 pt-5">
-                <h5 className="text-sm font-semibold text-gray-800">Add description section</h5>
-                <p className="mt-1 text-sm text-gray-500">
-                    Use the larger editor to write clear product details.
-                </p>
+  return (
+    // Card wrapper (was SectionCard)
+    <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+      <div>
+        <h4 className="font-semibold text-gray-800">Description sections</h4>
+        <p className="mt-1 text-sm text-gray-500">
+          Write clear, structured product details.
+        </p>
+      </div>
 
-                <AddForm
-                    schema={descriptionSectionSchema}
-                    fields={[
-                        { name: "title", label: "Section title" },
-                        { name: "sortOrder", label: "Order", type: "number" },
-                        { name: "body", label: "Write a detailed product description…", textarea: true },
-                    ]}
-                    onSubmit={(data, reset) => sectionMutation.mutate(data, { onSuccess: reset })}
-                />
-            </div>
-        </SectionCard>
-    );
+      {/* Existing sections: each one can be edited, deleted, and given images */}
+      <div className="mt-4 space-y-3">
+        {product.descriptions?.map((item) => (
+          <DescriptionSection
+            key={item.id}
+            productId={product.id}
+            section={item}
+            reload={reload}
+          />
+        ))}
+
+        {!hasSections && (
+          <p className="text-sm text-gray-400">No description sections yet.</p>
+        )}
+      </div>
+
+      {/* Add new section */}
+      <div className="mt-5 border-t border-gray-100 pt-5">
+        <h5 className="text-sm font-semibold text-gray-800">
+          Add description section
+        </h5>
+        <p className="mt-1 text-sm text-gray-500">
+          Use the larger editor to write clear product details.
+        </p>
+
+        <form
+          onSubmit={handleSubmit(onValid)}
+          noValidate
+          className="mt-3 grid gap-3 sm:grid-cols-2"
+        >
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">
+              Section title
+            </label>
+            <input
+              type="text"
+              {...register("title")}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+            {errors.title && (
+              <p className="mt-1 text-xs text-red-500">
+                {errors.title.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">
+              Order
+            </label>
+            <input
+              type="number"
+              {...register("sortOrder", { valueAsNumber: true })}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+            {errors.sortOrder && (
+              <p className="mt-1 text-xs text-red-500">
+                {errors.sortOrder.message}
+              </p>
+            )}
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-xs font-medium text-gray-600">
+              Description
+            </label>
+            <textarea
+              rows={6}
+              placeholder="Write a detailed product description…"
+              {...register("body")}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+            {errors.body && (
+              <p className="mt-1 text-xs text-red-500">{errors.body.message}</p>
+            )}
+          </div>
+
+          <div className="sm:col-span-2">
+            <button
+              type="submit"
+              disabled={sectionMutation.isPending}
+              className="inline-flex items-center gap-1.5 rounded-md bg-gray-800 px-4 py-2 text-xs font-semibold text-white transition hover:bg-gray-900 disabled:opacity-50"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              {sectionMutation.isPending ? "Adding…" : "Add"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }

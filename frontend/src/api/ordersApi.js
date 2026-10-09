@@ -1,24 +1,21 @@
 import axiosInstance from "./axios";
+import { unwrap } from "./unwrap";
 
 
-export const getOrder = async (cleanParams) => {
-    const { data } = await axiosInstance.get('/orders', { params: cleanParams });
-    return data.data;
+export const getOrder = (cleanParams) => {
+    return unwrap(axiosInstance.get('/orders', { params: cleanParams }));
 }
 
-export const getOrderDetails = async (orderId) => {
-    const { data } = await axiosInstance.get(`orders/${orderId}`);
-    return data.data;
+export const getOrderDetails = (orderId) => {
+    return unwrap(axiosInstance.get(`orders/${orderId}`));
 }
 
-export const createOrderRequest = async ({ shippingAddressId, paymentProvider }) => {
-    const { data } = await axiosInstance.post('/orders', { shippingAddressId, paymentProvider });
-    return data.data; // { order, payment }
+export const createOrderRequest = ({ shippingAddressId, paymentProvider }) => {
+    return unwrap(axiosInstance.post('/orders', { shippingAddressId, paymentProvider }));
 };
 
-export const orderCancelRequest = async (orderId) => {
-    const { data } = await axiosInstance.patch(`orders/${orderId}/cancel`);
-    return data.data;
+export const orderCancelRequest = (orderId) => {
+    return unwrap(axiosInstance.patch(`orders/${orderId}/cancel`));
 }
 
 

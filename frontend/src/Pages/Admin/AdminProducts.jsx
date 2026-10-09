@@ -1,39 +1,37 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit3, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
 
-import { deleteAdminProduct } from "@/api/adminApi";
-import { getProductsRequest } from "@/api/productsApi";
-import { Feedback, PageHeader, Pager, money } from "./adminUi";
+
+import PageHeader from "@/Components/Shared/Admin/PageHeader/PageHeader";
+import Feedback from "@/Components/Shared/Feedback/Feedback";
+import Pager from "@/Components/Shared/Pager/Pager";
+import { formateMoney } from "@/utils/formateMoney";
+import { useAdminProductsQuery, useDeleteAdminProduct } from "@/hooks/admin/useAdminProducts";
 
 export default function AdminProducts() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
-  const client = useQueryClient();
 
-  const products = useQuery({
-    queryKey: ["products", "admin", page, q],
-    queryFn: () =>
-      getProductsRequest({
-        page,
-        size: 15,
-        q: q || undefined,
-      }),
-  });
+  const products = useAdminProductsQuery({ page, q });
+  const remove = useDeleteAdminProduct();
 
-  const remove = useMutation({
-    mutationFn: deleteAdminProduct,
-    onSuccess: () => {
-      client.invalidateQueries({
-        queryKey: ["products"],
-      });
-      toast.success("Product deleted");
-    },
-    onError: () => toast.error("Could not delete product"),
-  });
+  function handleSearchChange(e) {
+    setSearch(e.target.value);
+  }
+
+  function handleSearchSubmit(e) {
+    e.preventDefault();
+    setPage(0);
+    setQ(search.trim());
+  }
+
+  function handleDelete(product) {
+    if (window.confirm(`Delete ${product.title}?`)) {
+      remove.mutate(product.id);
+    }
+  }
 
   return (
     <div>
@@ -42,22 +40,18 @@ export default function AdminProducts() {
         description="Create, update, and remove catalog products."
         action={
           <div className="flex gap-2">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setPage(0);
-                setQ(search);
-              }}
-              className="hidden sm:flex"
-            >
+            <form onSubmit={handleSearchSubmit} className="hidden sm:flex">
               <input
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder="Search…"
                 className="w-36 rounded-l-md border border-gray-200 px-3 text-sm"
               />
 
-              <button className="rounded-r-md bg-primary px-3 text-white">
+              <button
+                type="submit"
+                className="rounded-r-md bg-primary px-3 text-white"
+              >
                 <Search className="h-4 w-4" />
               </button>
             </form>
@@ -96,13 +90,11 @@ export default function AdminProducts() {
                     <p className="font-semibold text-gray-800">
                       {product.title}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      /{product.slug}
-                    </p>
+                    <p className="text-xs text-gray-400">/{product.slug}</p>
                   </td>
 
                   <td className="p-4 text-primary">
-                    {money(product.minPrice)}
+                    {formateMoney(product.minPrice)}
                   </td>
 
                   <td className="p-4">
@@ -121,13 +113,10 @@ export default function AdminProducts() {
                       </Link>
 
                       <button
-                        onClick={() =>
-                          window.confirm(
-                            `Delete ${product.title}?`
-                          ) &&
-                          remove.mutate(product.id)
-                        }
-                        className="text-gray-400 hover:text-red-500"
+                        type="button"
+                        onClick={() => handleDelete(product)}
+                        disabled={remove.isPending}
+                        className="text-gray-400 hover:text-red-500 disabled:opacity-50"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

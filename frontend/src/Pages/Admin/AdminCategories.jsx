@@ -1,5 +1,6 @@
-import { PageHeader } from "./adminUi";
-import CategoryManager from "@/components/Admin/Catalog/CategoryManager";
+// import { PageHeader } from "./adminUi";
+import CategoryManager from "@/Components/Admin/Catalog/CatalogMananger/CategoryManager";
+import PageHeader from "@/Components/Shared/Admin/PageHeader/PageHeader";
 
 export default function AdminCategories() {
     return (

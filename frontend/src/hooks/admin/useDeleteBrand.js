@@ -1,6 +1,7 @@
+import { deleteAdminBrand } from "@/api/adminApi/brands";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { deleteAdminBrand } from "@/api/adminApi";
+// import { deleteAdminBrand } from "@/api/adminApi";
 
 export function useDeleteBrand() {
     const client = useQueryClient();

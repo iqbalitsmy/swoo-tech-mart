@@ -2,14 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { Package, ShoppingBag, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import { getAdminOrders, getAdminUsers } from "@/api/adminApi";
+// import { getAdminOrders, getAdminUsers } from "@/api/adminApi";
 import { getProductsRequest } from "@/api/productsApi";
 import {
-  Feedback,
-  PageHeader,
-  money,
   statusClass,
-} from "./adminUi";
+} from "../../Components/Shared/Admin/adminUi";
+import { getAdminOrders } from "@/api/adminApi/orders";
+import { getAdminUsers } from "@/api/adminApi/users";
+import PageHeader from "@/Components/Shared/Admin/PageHeader/PageHeader";
+import Feedback from "@/Components/Shared/Feedback/Feedback";
+import { formateMoney } from "@/utils/formateMoney";
 
 export default function AdminDashboard() {
   const users = useQuery({
@@ -121,7 +123,7 @@ export default function AdminDashboard() {
                 </span>
 
                 <p className="font-semibold text-primary">
-                  {money(order.totalAmount)}
+                  {formateMoney(order.totalAmount)}
                 </p>
               </div>
             ))}

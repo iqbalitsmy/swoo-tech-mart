@@ -1,49 +1,48 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import {
-  getAdminOrders,
-  updateAdminOrderStatus,
-} from "@/api/adminApi";
-import {
-  Feedback,
   ORDER_STATUSES,
-  PageHeader,
-  Pager,
-  date,
-  money,
   statusClass,
-} from "./adminUi";
+} from "../../Components/Shared/Admin/adminUi";
+
+
 import { orderStatusSchema } from "@/validators/adminValidator";
+import PageHeader from "@/Components/Shared/Admin/PageHeader/PageHeader";
+import Feedback from "@/Components/Shared/Feedback/Feedback";
+import Pager from "@/Components/Shared/Pager/Pager";
+import { formateMoney } from "@/utils/formateMoney";
+import { formateDate } from "@/utils/formateDate";
+import { useAdminOrdersQuery, useUpdateAdminOrderStatus } from "@/hooks/admin/useAdminOrders";
 
 export default function AdminOrders() {
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState("");
-  const client = useQueryClient();
 
-  const query = useQuery({
-    queryKey: ["admin", "orders", page, status],
-    queryFn: () =>
-      getAdminOrders({
-        page,
-        size: 15,
-        status: status || undefined,
-      }),
-  });
+  const query = useAdminOrdersQuery({ page, status });
+  const update = useUpdateAdminOrderStatus();
 
-  const update = useMutation({
-    mutationFn: ({ id, value }) =>
-      updateAdminOrderStatus(id, value),
-    onSuccess: () => {
-      client.invalidateQueries({
-        queryKey: ["admin", "orders"],
-      });
+  function handleFilterChange(e) {
+    setStatus(e.target.value);
+    setPage(0);
+  }
 
-      toast.success("Order status updated");
-    },
-    onError: () => toast.error("Could not update the order"),
-  });
+  function handleOrderStatusChange(order, newStatus) {
+    const result = orderStatusSchema.safeParse({
+      id: order.id,
+      status: newStatus,
+    });
+
+    if (!result.success) {
+      toast.error(result.error.issues[0].message);
+      return;
+    }
+
+    update.mutate({
+      id: result.data.id,
+      value: result.data.status,
+    });
+  }
 
   return (
     <div>
@@ -53,10 +52,7 @@ export default function AdminOrders() {
         action={
           <select
             value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(0);
-            }}
+            onChange={handleFilterChange}
             className="rounded-md border border-gray-200 px-3 py-2 text-sm"
           >
             <option value="">All statuses</option>
@@ -92,27 +88,23 @@ export default function AdminOrders() {
                     {order.orderNumber}
                   </td>
 
-                  <td className="p-4 text-gray-500">
-                    {order.userEmail}
-                  </td>
+                  <td className="p-4 text-gray-500">{order.userEmail}</td>
 
                   <td className="p-4 text-gray-500">
-                    {date(order.createdAt)}
+                    {formateDate(order.createdAt)}
                   </td>
 
                   <td className="p-4 font-medium text-primary">
-                    {money(order.totalAmount)}
+                    {formateMoney(order.totalAmount)}
                   </td>
 
                   <td className="p-4">
                     <select
                       value={order.status}
                       disabled={update.isPending}
-                      onChange={(e) => {
-                        const result = orderStatusSchema.safeParse({ id: order.id, status: e.target.value });
-                        if (!result.success) return toast.error(result.error.issues[0].message);
-                        update.mutate({ id: result.data.id, value: result.data.status });
-                      }}
+                      onChange={(e) =>
+                        handleOrderStatusChange(order, e.target.value)
+                      }
                       className={`rounded-full border-0 px-2.5 py-1 text-xs font-semibold ${statusClass[order.status]}`}
                     >
                       {ORDER_STATUSES.map((s) => (

@@ -1,5 +1,5 @@
-import { useAttributeValues } from "@/hooks/useAttributeValues";
-import CheckboxPillGroup from "../ui/CheckboxPillGroup";
+import { useAttributeValues } from "@/hooks/admin/useAttributeValues";
+import CheckboxPillGroup from "../CheckboxPillGroup/CheckboxPillGroup";
 
 export default function AttributeValueGroup({ attributeType, selectedValues, onChange }) {
     const valuesQuery = useAttributeValues(attributeType.id);

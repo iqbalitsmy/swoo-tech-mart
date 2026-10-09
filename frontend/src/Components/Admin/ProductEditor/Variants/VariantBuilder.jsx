@@ -1,7 +1,7 @@
 import AttributeTypeSection from "./AttributeTypeSection";
 import AttributeValueGroup from "./AttributeValueGroup";
 import CombinationsTable from "./CombinationsTable";
-import SectionCard from "../ui/SectionCard";
+import SectionCard from "../inputFields/SectionCard";
 import { useVariantBuilder } from "@/hooks/useVariantBuilder";
 
 export default function VariantBuilder({ product, reload }) {

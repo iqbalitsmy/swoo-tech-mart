@@ -1,6 +1,7 @@
+import { updateAdminBrand } from "@/api/adminApi/brands";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { updateAdminBrand } from "@/api/adminApi";
+// import { updateAdminBrand } from "@/api/adminApi";
 
 export function useUpdateBrand() {
     const client = useQueryClient();

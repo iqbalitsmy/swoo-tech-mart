@@ -1,6 +1,7 @@
+import { updateAdminCategory } from "@/api/adminApi/categories";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { updateAdminCategory } from "@/api/adminApi";
+// import { updateAdminCategory } from "@/api/adminApi";
 
 export function useUpdateCategory() {
     const client = useQueryClient();

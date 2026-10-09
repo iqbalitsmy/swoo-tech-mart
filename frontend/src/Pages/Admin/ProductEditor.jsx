@@ -2,16 +2,17 @@ import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 
-import { useBrands } from "@/hooks/useBrands";
+import { useBrands } from "@/hooks/admin/useBrands";
 import { useProductForm } from "@/hooks/useProductForm";
-import { useSaveProduct } from "@/hooks/useSaveProduct";
+import { useSaveProduct } from "@/hooks/admin/useSaveProduct";
 
-import { Feedback, PageHeader } from "./adminUi";
 import ProductForm from "@/components/Admin/ProductEditor/ProductForm";
 import ProductContent from "@/components/Admin/ProductEditor/ProductContent";
 import { useProductDetail, useProductRecord } from "@/hooks/useProduct";
 import { useCategories } from "@/hooks/useCategory";
 import { useTags } from "@/hooks/useTags";
+import PageHeader from "@/Components/Shared/Admin/PageHeader/PageHeader";
+import Feedback from "@/Components/Shared/Feedback/Feedback";
 
 const ProductEditor = () => {
   const { slug } = useParams();

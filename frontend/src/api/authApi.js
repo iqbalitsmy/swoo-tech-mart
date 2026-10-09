@@ -1,4 +1,5 @@
 import axiosInstance from "./axios";
+import { unwrap } from "./unwrap";
 
 
 export const loginRequest = async ({ email, password }) => {
@@ -25,9 +26,8 @@ export const changePasswordRequest = async ({ currentPassword, newPassword }) =>
     return data;
 };
 
-export const getCurrentUserRequest = async () => {
-    const { data } = await axiosInstance.get("/users/me");
-    return data.data;
+export const getCurrentUserRequest = () => {
+    return unwrap(axiosInstance.get("/users/me"));
 }
 
 export const refreshAccessToken = async () => {

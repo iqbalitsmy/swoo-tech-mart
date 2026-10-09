@@ -1,6 +1,7 @@
+import { deleteAdminCategory } from "@/api/adminApi/categories";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { deleteAdminCategory } from "@/api/adminApi";
+// import { deleteAdminCategory } from "@/api/adminApi";
 
 export function useDeleteCategory() {
     const client = useQueryClient();

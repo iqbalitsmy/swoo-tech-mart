@@ -12,8 +12,13 @@ export default function CombinationsTable({
     setBulkStock,
     applyBulkValues,
 }) {
+    // The bulk inputs give us an event, but the setters want only the value
+    const handleBulkPriceChange = (e) => setBulkPrice(e.target.value);
+    const handleBulkStockChange = (e) => setBulkStock(e.target.value);
+
     return (
         <div className="space-y-3">
+            {/* Header: row count + bulk fill controls */}
             <div className="flex flex-wrap items-end justify-between gap-3">
                 <p className="text-xs font-medium text-gray-600">
                     {draftEntries.length} combination(s) generated
@@ -25,7 +30,7 @@ export default function CombinationsTable({
                         <input
                             type="number"
                             value={bulkPrice}
-                            onChange={(e) => setBulkPrice(e.target.value)}
+                            onChange={handleBulkPriceChange}
                             className="w-24 rounded border border-gray-200 px-2 py-1 text-xs"
                         />
                     </div>
@@ -34,7 +39,7 @@ export default function CombinationsTable({
                         <input
                             type="number"
                             value={bulkStock}
-                            onChange={(e) => setBulkStock(e.target.value)}
+                            onChange={handleBulkStockChange}
                             className="w-20 rounded border border-gray-200 px-2 py-1 text-xs"
                         />
                     </div>
@@ -66,9 +71,10 @@ export default function CombinationsTable({
                                 key={key}
                                 draftKey={key}
                                 draft={draft}
+                                // Show row errors only after the first submit attempt
                                 errors={attemptedSubmit ? rowErrors[key] ?? {} : {}}
                                 updateDraft={updateDraft}
-                                onRemove={() => removeDraftRow(key)}
+                                onRemove={removeDraftRow}
                             />
                         ))}
                     </tbody>

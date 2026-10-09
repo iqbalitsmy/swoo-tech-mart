@@ -1,6 +1,7 @@
+import { updateAttributeValue } from "@/api/adminApi/attributes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { updateAttributeValue } from "@/api/adminApi";
+// import { updateAttributeValue } from "@/api/adminApi";
 
 export function useUpdateAttributeValue() {
     const client = useQueryClient();

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { addAdminVariantImage, createAdminVariant } from "@/api/adminApi";
 import { uploadCloudinaryImage } from "@/api/cloudinaryApi";
 import { buildCombinations, comboKey, validateDraft } from "@/utils/variantCombinations";
 import { toast } from "sonner";
-import { useAttributeTypes } from "./useAttributeTypes";
+import { useAttributeTypes } from "./admin/useAttributeTypes";
+import { addAdminVariantImage, createAdminVariant } from "@/api/adminApi/variants";
 
 export function useVariantBuilder(product, reload) {
     const [selectedAttributeTypeIds, setSelectedAttributeTypeIds] = useState([]);

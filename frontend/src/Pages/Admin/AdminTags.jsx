@@ -1,5 +1,5 @@
-import { PageHeader } from "./adminUi";
-import TagManager from "@/components/Admin/Catalog/TagManager";
+import TagManager from "@/Components/Admin/Catalog/CatalogMananger/TagManager";
+import PageHeader from "@/Components/Shared/Admin/PageHeader/PageHeader";
 
 export default function AdminTags() {
     return (

@@ -1,20 +1,18 @@
 import axiosInstance from "./axios"
+import { unwrap } from "./unwrap";
 
 export const getProductFiltersRequest = async (slug) => {
-    const { data } = await axiosInstance.get('/products/filters', {
+    return unwrap(axiosInstance.get('/products/filters', {
         params: slug ? { slug: slug } : undefined,
-    });
-    return data.data;
+    }));
 };
 
 export const getRelatedProductRequest = async (id) => {
-    const { data } = await axiosInstance.get(`/products/${id}/related`);
-    return data.data;
+    return unwrap(axiosInstance.get(`/products/${id}/related`));
 };
 
 export const getProductRequest = async (slug) => {
-    const { data } = await axiosInstance.get(`/products/${slug}`);
-    return data.data;
+    return unwrap(axiosInstance.get(`/products/${slug}`));
 };
 
 export const getProductsRequest = async ({
@@ -30,7 +28,7 @@ export const getProductsRequest = async ({
     size,
     q,
 }) => {
-    const { data } = await axiosInstance.get('/products', {
+    return unwrap(axiosInstance.get('/products', {
         params: {
             categorySlug: category || undefined,
             brandSlug: brand || undefined,
@@ -44,6 +42,5 @@ export const getProductsRequest = async ({
             size: size || undefined,
             q: q || undefined,
         },
-    });
-    return data.data;
+    }));
 };

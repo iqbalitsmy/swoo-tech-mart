@@ -1,6 +1,7 @@
+import { createAttributeType } from "@/api/adminApi/attributes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createAttributeType } from "@/api/adminApi";
+// import { createAttributeType } from "@/api/adminApi";
 
 export function useCreateAttributeType() {
     const client = useQueryClient();

@@ -2,7 +2,6 @@ import ProductHighlights from "./ProductHighlights";
 import ProductImages from "./ProductImages";
 import ProductDescriptions from "./ProductDescriptions";
 import ProductVariants from "./Variants/ProductVariants";
-// import ProductVariants from "./ProductVariants";
 
 export default function ProductContent({
     product,

@@ -1,5 +1,5 @@
-import VariantAttributesManager from "@/components/Admin/Catalog/VariantAttributesManager";
-import { PageHeader } from "./adminUi";
+import VariantAttributesManager from "@/Components/Admin/Catalog/CatalogMananger/VariantAttributesManager";
+import PageHeader from "@/Components/Shared/Admin/PageHeader/PageHeader";
 
 export default function AdminVariantAttributes() {
     return (

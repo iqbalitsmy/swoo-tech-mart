@@ -1,6 +1,7 @@
+import { createAdminTag } from "@/api/adminApi/tags";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createAdminTag } from "@/api/adminApi";
+// import { createAdminTag } from "@/api/adminApi";
 
 export function useCreateTag() {
     const client = useQueryClient();

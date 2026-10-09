@@ -1,9 +1,10 @@
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
-import { Feedback, PageHeader } from "./adminUi";
-import AttributeValueManager from "@/components/Admin/Catalog/AttributeValueManager";
-import { useAttributeTypes } from "@/hooks/useAttributeTypes";
+import AttributeValueManager from "@/Components/Admin/Catalog/CatalogMananger/AttributeValueManager";
+import { useAttributeTypes } from "@/hooks/admin/useAttributeTypes";
+import PageHeader from "@/Components/Shared/Admin/PageHeader/PageHeader";
+import Feedback from "@/Components/Shared/Feedback/Feedback";
 
 export default function AdminVariantValues() {
     const { typeId } = useParams();

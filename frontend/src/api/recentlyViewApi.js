@@ -1,12 +1,11 @@
 import axiosInstance from "./axios";
+import { unwrap } from "./unwrap";
 
 
-export const getRecentlyViewRequest = async () => {
-    const { data } = await axiosInstance.get("/recently-viewed");
-    return data.data;
+export const getRecentlyViewRequest = () => {
+    return unwrap(axiosInstance.get("/recently-viewed"));
 }
 
-export const recordRecentlyViewRequest = async (productId) => {
-    const { data } = await axiosInstance.post(`/recently-viewed/${productId}`);
-    return data.data;
+export const recordRecentlyViewRequest = (productId) => {
+    return unwrap(axiosInstance.post(`/recently-viewed/${productId}`));
 }

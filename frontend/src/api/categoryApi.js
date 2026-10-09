@@ -1,14 +1,13 @@
 import axiosInstance from "./axios";
+import { unwrap } from "./unwrap";
 
 
-export const getCategoryListRequest = async (categoryId) => {
-    const { data } = await axiosInstance.get('/categories', {
+export const getCategoryListRequest = (categoryId) => {
+    return unwrap(axiosInstance.get('/categories', {
         params: categoryId != null ? { parentId: categoryId } : undefined
-    });
-    return data.data;
+    }));
 };
 
-export const getCategoryRequest = async (categorySlug) => {
-    const { data } = await axiosInstance.get(`/categories/${categorySlug}`);
-    return data.data;
+export const getCategoryRequest = (categorySlug) => {
+    return unwrap(axiosInstance.get(`/categories/${categorySlug}`));
 };

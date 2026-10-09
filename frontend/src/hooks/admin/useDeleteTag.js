@@ -1,6 +1,7 @@
+import { deleteAdminTag } from "@/api/adminApi/tags";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { deleteAdminTag } from "@/api/adminApi";
+// import { deleteAdminTag } from "@/api/adminApi";
 
 export function useDeleteTag() {
     const client = useQueryClient();

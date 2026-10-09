@@ -1,5 +1,6 @@
-import { PageHeader } from "./adminUi";
-import BrandManager from "@/components/Admin/Catalog/BrandManager";
+// import { PageHeader } from "./adminUi";
+import BrandManager from "@/Components/Admin/Catalog/CatalogMananger/BrandManager";
+import PageHeader from "@/Components/Shared/Admin/PageHeader/PageHeader";
 
 export default function AdminBrands() {
     return (
