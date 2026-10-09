@@ -18,8 +18,8 @@ public record ProductVariantCreateRequest(
         @Min(value = 0, message = "Stock quantity can't be less than 0")
         Integer stockQty,
 
-        @Size(max=100)
-        String imageUrl,
+//        @Size(max=100)
+//        String imageUrl,
 
         /** e.g. [redValueId, sizeLValueId] — one value per attribute type this variant is defined by. */
         List<Long> attributeValueIds

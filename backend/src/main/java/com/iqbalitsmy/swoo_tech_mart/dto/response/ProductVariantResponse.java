@@ -11,7 +11,7 @@ public record ProductVariantResponse(
         String sku,
         BigDecimal price,
         Integer stockQty,
-        String imageUrl,
+//        String imageUrl,
         boolean active,
         List<VariantAttributeRef> attributes,
         List<ProductVariantImageResponse> images
@@ -27,7 +27,7 @@ public record ProductVariantResponse(
                 variant.getSku(),
                 variant.getPrice(),
                 variant.getStockQty(),
-                variant.getImageUrl(),
+//                variant.getImageUrl(),
                 variant.getActive(),
                 attributes,
                 images

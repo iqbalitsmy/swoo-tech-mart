@@ -32,8 +32,8 @@ public class ProductVariant {
     @Column(nullable = false)
     private Integer stockQty;
 
-    @Column(length = 500)
-    private String imageUrl;
+//    @Column(length = 500)
+//    private String imageUrl;
 
     @Column(nullable = false)
     @Builder.Default

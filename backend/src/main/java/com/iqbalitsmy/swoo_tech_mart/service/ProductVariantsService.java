@@ -65,7 +65,7 @@ public class ProductVariantsService {
                 .sku(request.sku())
                 .price(request.price())
                 .stockQty(request.stockQty())
-                .imageUrl(request.imageUrl())
+//                .imageUrl(request.imageUrl())
                 .attributeValues(resolvedAttributeValues(request.attributeValueIds()))
                 .build();
 
@@ -85,7 +85,7 @@ public class ProductVariantsService {
         variant.setSku(request.sku());
         variant.setPrice(request.price());
         variant.setStockQty(request.stockQty());
-        variant.setImageUrl(request.imageUrl());
+//        variant.setImageUrl(request.imageUrl());
 
         ProductVariant saved = productVariantRepository.save(variant);
 
