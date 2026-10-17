@@ -25,10 +25,10 @@ import { useCategory, useCategoryList } from "@/hooks/useCategory";
 const panels = [
     {
         title: "Audios & Cameras",
-        categorySlug: "audios",
+        categorySlug: "audios-and-cameras",
         bannerImage: speakerBanner,
         bannerOverlayLines: ["Best", "Speaker", "2023"],
-        bannerHref: "/products?category=audios",
+        bannerHref: "/products?category=audios-and-cameras",
         // subcategories: [
         //     { image: speakerImg, name: "Speaker", itemCount: 12 },
         //     { image: cameraImg, name: "DSLR Camera", itemCount: 9 },
