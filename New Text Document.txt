@@ -1,7 +1,0 @@
-auth-controller all
-user-controller all
-address-controller all
-category-controller all
-brand-controller all
-tag-controller all
-product-controller all

@@ -5,33 +5,10 @@ spring:
   application:
     name: swoo-tech-mart
 
-  # ---------- H2 (in-memory) ----------
-#  datasource:
-#    url: jdbc:h2:mem:swootechmart;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-#    driver-class-name: org.h2.Driver
-#    username: sa
-#    password:
-#
-#  h2:
-#    console:
-#      enabled: true
-#      path: /h2-console
-#
-#  jpa:
-#    hibernate:
-#      ddl-auto: update
-#    show-sql: true
-#    properties:
-#      hibernate:
-#        format_sql: true
-#    open-in-view: false
-#    defer-datasource-initialization: true
-
-#
   datasource:
-    url: jdbc:postgresql://localhost:5432/swootechmart
-    username: postgres
-    password: 123
+    url: jdbc:postgresql://ep-muddy-lab-b5rvytdx-pooler.c-7.us-east-2.aws.neon.tech/swoo-tech-mart?sslmode=require&channel_binding=require
+    username: neondb_owner
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -43,9 +20,6 @@ spring:
         format_sql: false
     open-in-view: false
     defer-datasource-initialization: true
-
-
-
 
   sql:
     init:
@@ -60,8 +34,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:x}
-            client-secret: ${GOOGLE_CLIENT_SECRET:xx}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - email
               - profile
@@ -69,10 +43,10 @@ spring:
 # ---------- App / JWT settings ----------
 app:
   jwt:
-    secret: ${JWT_SECRET:==}
+    secret: ${JWT_SECRET}
     access-token-expiration-ms: 900000
     refresh-token-expiration-ms: 604800000
-    refresh-cookie-secure: ${JWT_REFRESH_COOKIE_SECURE:true}
+    refresh-cookie-secure: ${JWT_REFRESH_COOKIE_SECURE}
   oauth2:
     authorized-redirect-uris:
       - http://localhost:5173/oauth2/redirect
@@ -82,44 +56,43 @@ app:
     free-shipping-threshold: 50.00
 
 
-#app:
-#  jwt:
-#    # 256-bit+ secret required for HS256. Override via JWT_SECRET env var in real deployments.
-#    secret: ${JWT_SECRET:c3dvby10ZWNoLW1hcnQtc3VwZXItc2VjcmV0LWtleS1jaGFuZ2UtbWUtaW4tcHJvZHVjdGlvbg==}
-#    access-token-expiration-ms: 900000        # 15 minutes
-#    refresh-token-expiration-ms: 604800000    # 7 days
-#  oauth2:
-#    authorized-redirect-uris:
-#      - http://localhost:5173/oauth2/redirect
-
-#logging:
-#  level:
-#    org.springframework.security: INFO
-#    com.swootechmart: DEBUG
-
-
-# Add inside the existing `app:` block in application.yml
-
-
   payments:
     # existing mock webhook-secret stays as-is, still used by MockPaymentGatewayClient
-    webhook-secret: ${PAYMENTS_WEBHOOK_SECRET:dev-only-webhook-shared-secret-change-me}
+    webhook-secret: ${PAYMENTS_WEBHOOK_SECRET}
 
     # NEW — Stripe-specific config
     stripe:
       # Secret key from https://dashboard.stripe.com/test/apikeys (starts with sk_test_ in test mode).
       # NEVER commit a real key — always inject via env var in every environment past local dev.
-      secret-key: ${STRIPE_SECRET_KEY:}
+      secret-key: ${STRIPE_SECRET_KEY}
       # Signing secret for the specific webhook endpoint you register in the Stripe
       # Dashboard (or the one printed by `stripe listen` locally — see explanation below).
-      webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+      webhook-secret: ${STRIPE_WEBHOOK_SECRET}
 
     # NEW — used by PaymentService when building each Payment row, and as
     # StripePaymentGatewayClient's fallback if Payment.currency is somehow null
     currency: usd
 
 cloudinary:
-  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
-  api-key: ${CLOUDINARY_API_KEY:}
-  api-secret: ${CLOUDINARY_API_SECRET:}
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
   upload-folder: swoo-tech-mart/products
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - beans
+          - mappings
+          - metrics
+          - loggers
+          - env
+          - configprops
+          - conditions
+          - caches
+          - threaddump
