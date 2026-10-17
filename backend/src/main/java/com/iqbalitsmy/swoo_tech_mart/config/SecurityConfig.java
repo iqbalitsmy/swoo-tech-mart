@@ -106,7 +106,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "https://swoo-tech-mart-shop.vercel.app/", "https://swoo-tech-mart-iq58dxjbv-iqbalitsmys-projects.vercel.app/"));
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "https://swoo-tech-mart-shop.vercel.app:*", "https://swoo-tech-mart-iq58dxjbv-iqbalitsmys-projects.vercel.app:*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("X-Guest-Session-Id"));
