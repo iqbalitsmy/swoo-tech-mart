@@ -24,7 +24,7 @@ public class CategoryService {
     //------ public reads ------
     @Transactional(readOnly = true)
     public List<CategoryResponse> list(Long parentId){
-        List<Category>  categories = parentId == null ? categoryRepository.findAllOrderByName()
+        List<Category>  categories = parentId == null ? categoryRepository.findAllByOrderByNameAsc()
                 : categoryRepository.findByParentCategory_IdOrderByNameAsc(parentId);
 
         return categories.stream()

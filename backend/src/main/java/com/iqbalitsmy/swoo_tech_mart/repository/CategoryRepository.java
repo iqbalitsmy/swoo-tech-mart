@@ -13,7 +13,7 @@ public interface CategoryRepository extends JpaRepository<Category,Long> {
 
     // Returns all top-level (root) categories — those with no parent — sorted alphabetically by name;
     // used to build the main nav/category tree's first level.
-    List<Category> findByParentCategoryIsNullOrderByNameAsc();
+    List<Category> findAllByOrderByNameAsc();
 
     // Returns all direct child categories of the given parent category, sorted alphabetically by name; the sibling method to findByParentCategoryIsNullOrderByNameAsc,
     // used to fetch one level of the tree at a time.
