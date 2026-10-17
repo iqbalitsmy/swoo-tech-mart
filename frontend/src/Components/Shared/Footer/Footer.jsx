@@ -3,7 +3,7 @@ import twitterIcon from "../../../assets/icon/twitter.png"
 import fbIcon from "../../../assets/icon/fb.png"
 import instagramIcon from "../../../assets/icon/instagram.png"
 import youtubeIcon from "../../../assets/icon/youtube.png"
-import pinterestIcon from "../../../assets/icon/pinterest.png"
+// import pinterestIcon from "../../../assets/icon/pinterest.png"
 import { ChevronDown } from "lucide-react";
 
 const topCategories = [
