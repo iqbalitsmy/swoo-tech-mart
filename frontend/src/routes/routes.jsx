@@ -1,8 +1,5 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import Main from "../layouts/Main";
-import HomePage from "../pages/HomePage/HomePage";
-import ProductDetailsPage from "../pages/ProductDetails/ProductDetailsPage";
-import ProductsPage from "../pages/Products/ProductsPage";
 import SignupPage from "@/pages/SignupPage/SignupPage";
 import LoginPage from "@/pages/LoginPage/LoginPage";
 import WishlistPage from "@/pages/WishlistPage/WishlistPage";
@@ -30,6 +27,9 @@ import AdminBrands from "@/pages/Admin/AdminBrands";
 import AdminTags from "@/pages/Admin/AdminTags";
 import AdminVariantAttributes from "@/pages/Admin/AdminVariantAttributes";
 import AdminVariantValues from "@/pages/Admin/AdminVariantValues";
+import HomePage from "@/Pages/HomePage/HomePage";
+import ProductDetailsPage from "@/Pages/ProductDetails/ProductDetailsPage";
+import ProductsPage from "@/Pages/Products/ProductsPage";
 
 const router = createBrowserRouter([
   {
@@ -56,18 +56,6 @@ const router = createBrowserRouter([
         path: "cart",
         element: <CartPage />,
       },
-    //   {
-    //     path: "checkout",
-    //     element: <CheckoutPage />,
-    //   },
-    //   {
-    //     path: "checkout/pay/:orderId",
-    //     element: <PaymentPage />,
-    //   },
-    //   {
-    //     path: "checkout/payment-result",
-    //     element: <PaymentResultPage />,
-    //   },
       {
         element: <GuestRoute />,
         children: [
