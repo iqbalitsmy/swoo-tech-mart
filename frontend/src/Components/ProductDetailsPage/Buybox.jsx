@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Heart, Truck } from "lucide-react";
 import QuantityStepper from "./QuantityStepper";
 
 import twitterIcon from "../../assets/icon/twitter.png"
 import fbIcon from "../../assets/icon/fb.png"
 import instagramIcon from "../../assets/icon/instagram.png"
 import youtubeIcon from "../../assets/icon/youtube.png"
-import pinterestIcon from "../../assets/icon/pinterest.png"
-import PromoCallout from "./PromoCallout";
 import VariantSelector from "./VariantSelector";
 import { useVariantMatrix } from "@/utils/Usevariantmatrix";
 import WishlistButton from "./WishlistButton";

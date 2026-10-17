@@ -1,6 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
-import VariantSelector from "./VariantSelector";
-import PromoCallout from "./PromoCallout";
+import React from "react";
 import { Link } from "react-router-dom";
 
 
