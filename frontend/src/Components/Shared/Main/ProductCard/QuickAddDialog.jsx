@@ -8,13 +8,13 @@ import {
     DialogTitle,
     DialogDescription,
     DialogClose,
-} from '@/components/ui/dialog';
+} from '@/Components/ui/dialog';
 import { useVariantMatrix } from '@/utils/Usevariantmatrix';
 import { useGetProduct } from '@/hooks/useProduct';
-import QuantityStepper from '@/components/ProductDetailsPage/QuantityStepper';
-import VariantSelector from '@/components/ProductDetailsPage/VariantSelector';
-import AddToCartButton from '@/components/ProductDetailsPage/AddToCartButton';
-import WishlistButton from '@/components/ProductDetailsPage/WishlistButton';
+import QuantityStepper from '@/Components/ProductDetailsPage/QuantityStepper';
+import VariantSelector from '@/Components/ProductDetailsPage/VariantSelector';
+import AddToCartButton from '@/Components/ProductDetailsPage/AddToCartButton';
+import WishlistButton from '@/Components/ProductDetailsPage/WishlistButton';
 import { useAddToCart } from '@/hooks/useCart';
 
 const STOCK_LABELS = {

@@ -3,8 +3,8 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useInitiatePayment } from '@/hooks/useOrders';
-import StripeProvider from '@/components/CheckoutPage/StripeProvider';
-import StripePaymentForm from '@/components/CheckoutPage/StripePaymentForm';
+import StripeProvider from '@/Components/CheckoutPage/StripeProvider';
+import StripePaymentForm from '@/Components/CheckoutPage/StripePaymentForm';
 
 const formatTaka = (n) => `৳ ${n.toLocaleString('en-US')}`;
 

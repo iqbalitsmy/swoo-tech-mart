@@ -13,7 +13,7 @@ import CheckoutPage from "@/Pages/CheckoutPage/CheckoutPage";
 import OrderDetails from "@/Pages/OrderDetails/OrderDetails";
 import GuestRoute from "./GuestRoute";
 import PrivateRoute from "./PrivateRoute";
-import PaymentResultPage from "@/components/CheckoutPage/PaymentResultPage";
+import PaymentResultPage from "@/Components/CheckoutPage/PaymentResultPage";
 import PaymentPage from "@/Pages/PaymentPage/PaymentPage";
 import AdminRoute from "./AdminRoute";
 import AdminLayout from "@/layouts/AdminLayout";

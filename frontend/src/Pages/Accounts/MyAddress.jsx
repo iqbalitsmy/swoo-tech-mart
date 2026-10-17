@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Pencil, Trash2, MapPin } from 'lucide-react';
-import AddAddressDialog from '@/components/CheckoutPage/AddAddressDialog';
+import AddAddressDialog from '@/Components/CheckoutPage/AddAddressDialog';
 import {
     useAddresses,
     useAddAddress,

@@ -6,8 +6,8 @@ import { useBrands } from "@/hooks/admin/useBrands";
 import { useProductForm } from "@/hooks/useProductForm";
 import { useSaveProduct } from "@/hooks/admin/useSaveProduct";
 
-import ProductForm from "@/components/Admin/ProductEditor/ProductForm";
-import ProductContent from "@/components/Admin/ProductEditor/ProductContent";
+import ProductForm from "@/Components/Admin/ProductEditor/ProductForm";
+import ProductContent from "@/Components/Admin/ProductEditor/ProductContent";
 import { useProductDetail, useProductRecord } from "@/hooks/useProduct";
 import { useCategories } from "@/hooks/useCategory";
 import { useTags } from "@/hooks/useTags";

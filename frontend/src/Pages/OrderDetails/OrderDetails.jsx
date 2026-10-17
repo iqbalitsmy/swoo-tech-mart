@@ -10,7 +10,7 @@ import {
     DialogTitle,
     DialogDescription,
     DialogFooter,
-} from '@/components/ui/dialog';
+} from '@/Components/ui/dialog';
 
 const statusStyle = {
     PENDING: 'bg-gray-100 text-gray-600',

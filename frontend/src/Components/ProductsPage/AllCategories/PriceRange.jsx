@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Slider } from '@/components/ui/slider';
+import { Slider } from '@/Components/ui/slider';
 
 
 const PriceRange = ({ min, max }) => {
